@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión • SENA Empresa ERP</title>
+    <title>Registro de Usuario • SENA Empresa ERP</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('general/assets/img/cefaempresa.png') }}">
@@ -36,21 +36,21 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 30px 20px;
             color: #333;
         }
 
-        .login-card {
+        .register-card {
             background: #ffffff;
             border-radius: 24px;
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
             overflow: hidden;
             width: 100%;
-            max-width: 960px;
+            max-width: 1000px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .login-banner {
+        .register-banner {
             background: linear-gradient(135deg, rgba(0, 26, 41, 0.95) 0%, rgba(0, 35, 54, 0.95) 100%),
                         url('{{ asset("general/assets/img/cefaempresa.png") }}') center/cover no-repeat;
             color: #ffffff;
@@ -62,7 +62,7 @@
             border-right: 4px solid var(--sena-green);
         }
 
-        .login-banner::before {
+        .register-banner::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -70,16 +70,16 @@
             pointer-events: none;
         }
 
-        .login-form-container {
-            padding: 50px 40px;
+        .register-form-container {
+            padding: 45px 40px;
             background: #ffffff;
         }
 
         .form-control {
             border-radius: 12px;
-            padding: 12px 16px 12px 45px;
+            padding: 11px 16px 11px 45px;
             border: 1.5px solid #e0e0e0;
-            font-size: 15px;
+            font-size: 14px;
             transition: all 0.25s ease;
         }
 
@@ -95,7 +95,7 @@
             transform: translateY(-50%);
             z-index: 10;
             color: #888;
-            font-size: 16px;
+            font-size: 15px;
             transition: color 0.25s ease;
         }
 
@@ -108,7 +108,7 @@
             color: #ffffff;
             font-weight: 700;
             border-radius: 12px;
-            padding: 14px 24px;
+            padding: 13px 24px;
             font-size: 15px;
             border: 2px solid #39A900;
             box-shadow: 0 6px 20px rgba(0, 26, 41, 0.35);
@@ -127,22 +127,6 @@
             box-shadow: 0 10px 25px rgba(57, 169, 0, 0.45);
         }
 
-        .btn-sena:active {
-            transform: translateY(1px);
-            box-shadow: 0 4px 12px rgba(57, 169, 0, 0.3);
-        }
-
-        .btn-icon-navy {
-            color: #62E31D;
-            font-size: 16px;
-            transition: color 0.3s ease, transform 0.3s ease;
-        }
-
-        .btn-sena:hover .btn-icon-navy {
-            color: #ffffff;
-            transform: scale(1.15);
-        }
-
         .back-home-btn {
             color: rgba(255, 255, 255, 0.85);
             text-decoration: none;
@@ -158,29 +142,15 @@
             color: var(--sena-neon);
             transform: translateX(-4px);
         }
-
-        .toggle-password {
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #888;
-            z-index: 10;
-        }
-
-        .toggle-password:hover {
-            color: var(--sena-green);
-        }
     </style>
 </head>
 <body>
 
-    <div class="login-card">
+    <div class="register-card">
         <div class="row g-0">
             
-            <!-- Left Banner: SENA Empresa Institutional Identity -->
-            <div class="col-lg-5 login-banner">
+            <!-- Left Banner -->
+            <div class="col-lg-5 register-banner">
                 <div>
                     @php
                         $targetRedirect = request('redirect', old('redirect', $redirect ?? ''));
@@ -196,48 +166,36 @@
                         <img src="{{ asset('general/assets/img/cefaempresa.png') }}" alt="Logo SENA Empresa" class="bg-white rounded-circle p-2 shadow-sm me-3" style="width: 58px; height: 58px; object-fit: contain;">
                         <div>
                             <h3 class="fw-bold mb-0 text-white fs-4">SENA EMPRESA</h3>
-                            <span class="fs-7 fw-semibold" style="color: var(--sena-neon);">Plataforma ERP Integrada</span>
+                            <span class="fs-7 fw-semibold" style="color: var(--sena-neon);">Crear Cuenta en el ERP</span>
                         </div>
                     </div>
 
                     <p class="text-white-50 fs-6 leading-relaxed mb-4">
-                        Modelo didáctico de formación profesional para la vivencia real del entorno empresarial en el Centro Agroindustrial <strong>"La Angostura"</strong> (Campoalegre - Huila).
+                        Regístrate para acceder a los módulos de gestión, control de turnos y procesos del Centro Agroindustrial <strong>"La Angostura"</strong>.
                     </p>
                 </div>
 
                 <div class="border-top border-secondary border-opacity-50 pt-4">
-                    <ul class="list-unstyled text-white-50 fs-7 mb-0">
-                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2" style="color: var(--sena-neon) !important;"></i> Procesos Estratégicos, Misionales y de Apoyo</li>
-                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2" style="color: var(--sena-neon) !important;"></i> Control de Inventarios, Compras y Ventas</li>
-                        <li><i class="fas fa-check-circle text-success me-2" style="color: var(--sena-neon) !important;"></i> Gestión de Talento Humano y Turnos</li>
-                    </ul>
+                    <p class="text-white-50 fs-7 mb-2">¿Ya tienes una cuenta registrada?</p>
+                    <a href="{{ route('login', ['redirect' => $targetRedirect]) }}" class="btn btn-outline-light rounded-pill px-4 py-2 fs-7 fw-bold">
+                        <i class="fas fa-right-to-bracket me-1" style="color: var(--sena-neon) !important;"></i> Iniciar Sesión
+                    </a>
                 </div>
             </div>
 
-            <!-- Right Form: Login Authentication -->
-            <div class="col-lg-7 login-form-container d-flex flex-column justify-content-between">
+            <!-- Right Form: Registration -->
+            <div class="col-lg-7 register-form-container d-flex flex-column justify-content-between">
                 <div>
-                    <div class="text-center text-lg-start mb-4">
-                    <!-- Flash messages & Alerts -->
-                    @if(session('info'))
-                        <div class="alert alert-info border-0 rounded-3 shadow-sm d-flex align-items-center gap-2 mb-3 py-2 px-3 fs-7" role="alert">
-                            <i class="fas fa-info-circle text-info fs-6"></i>
-                            <div>{{ session('info') }}</div>
-                        </div>
-                    @endif
-
-                    @if(session('success'))
-                        <div class="alert alert-success border-0 rounded-3 shadow-sm d-flex align-items-center gap-2 mb-3 py-2 px-3 fs-7" role="alert">
-                            <i class="fas fa-check-circle text-success fs-6"></i>
-                            <div>{{ session('success') }}</div>
-                        </div>
-                    @endif
+                    <div class="mb-4">
+                        <h4 class="fw-bold text-dark mb-1">Registro de Nuevo Usuario</h4>
+                        <p class="text-muted fs-7 mb-0">Completa tus datos para crear tu usuario en la plataforma.</p>
+                    </div>
 
                     @if($errors->any())
                         <div class="alert alert-danger border-0 rounded-3 shadow-sm mb-3 py-2 px-3 fs-7" role="alert">
                             <div class="d-flex align-items-center gap-2 mb-1">
                                 <i class="fas fa-exclamation-triangle text-danger fs-6"></i>
-                                <strong>Error de autenticación:</strong>
+                                <strong>Corrige los siguientes errores:</strong>
                             </div>
                             <ul class="mb-0 ps-3">
                                 @foreach($errors->all() as $error)
@@ -247,66 +205,76 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('login.post') }}" method="POST">
+                    <form action="{{ route('register.post') }}" method="POST">
                         @csrf
                         <input type="hidden" name="redirect" value="{{ old('redirect', $redirect ?? request('redirect')) }}">
 
-                        <!-- User / Email Input -->
+                        <!-- Nombre Completo -->
                         <div class="mb-3 position-relative form-group-custom">
-                            <label for="email" class="form-label fw-semibold text-secondary fs-7">Correo Electrónico / Usuario</label>
+                            <label for="nombre_completo" class="form-label fw-semibold text-secondary fs-7 mb-1">Nombre Completo</label>
+                            <div class="position-relative">
+                                <i class="fas fa-user input-group-text-icon"></i>
+                                <input type="text" id="nombre_completo" name="nombre_completo" value="{{ old('nombre_completo') }}" class="form-control @error('nombre_completo') is-invalid @enderror" placeholder="Ej: Juan Pérez Morales" required autofocus>
+                            </div>
+                        </div>
+
+                        <!-- Nombre de Usuario -->
+                        <div class="mb-3 position-relative form-group-custom">
+                            <label for="nombre_usuario" class="form-label fw-semibold text-secondary fs-7 mb-1">Nombre de Usuario (Nickname)</label>
+                            <div class="position-relative">
+                                <i class="fas fa-id-badge input-group-text-icon"></i>
+                                <input type="text" id="nombre_usuario" name="nombre_usuario" value="{{ old('nombre_usuario') }}" class="form-control @error('nombre_usuario') is-invalid @enderror" placeholder="Ej: jperez" required>
+                            </div>
+                        </div>
+
+                        <!-- Correo Electrónico -->
+                        <div class="mb-3 position-relative form-group-custom">
+                            <label for="correo" class="form-label fw-semibold text-secondary fs-7 mb-1">Correo Electrónico Institucional</label>
                             <div class="position-relative">
                                 <i class="fas fa-envelope input-group-text-icon"></i>
-                                <input type="text" id="email" name="email" value="{{ old('email') }}" class="form-control @error('email') is-invalid @enderror" placeholder="ejemplo@sena.edu.co o usuario" required autofocus>
+                                <input type="email" id="correo" name="correo" value="{{ old('correo') }}" class="form-control @error('correo') is-invalid @enderror" placeholder="usuario@soy.sena.edu.co" required>
                             </div>
                         </div>
 
-                        <!-- Password Input -->
-                        <div class="mb-3 position-relative form-group-custom">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <label for="password" class="form-label fw-semibold text-secondary fs-7 mb-0">Contraseña</label>
-                                <a href="javascript:void(0)" onclick="alert('Por favor contacte al Administrador del Sistema ERP o Soporte TIC.');" class="fs-7 text-decoration-none fw-semibold" style="color: var(--sena-green);">¿Olvidaste tu contraseña?</a>
+                        <!-- Password y Confirmación en Grid -->
+                        <div class="row g-2 mb-4">
+                            <div class="col-md-6">
+                                <div class="position-relative form-group-custom">
+                                    <label for="password" class="form-label fw-semibold text-secondary fs-7 mb-1">Contraseña</label>
+                                    <div class="position-relative">
+                                        <i class="fas fa-lock input-group-text-icon"></i>
+                                        <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror" placeholder="Mínimo 8 caracteres" required>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="position-relative">
-                                <i class="fas fa-lock input-group-text-icon"></i>
-                                <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror" placeholder="••••••••" required>
-                                <i class="far fa-eye toggle-password" id="togglePassword"></i>
+                            <div class="col-md-6">
+                                <div class="position-relative form-group-custom">
+                                    <label for="password_confirmation" class="form-label fw-semibold text-secondary fs-7 mb-1">Confirmar Contraseña</label>
+                                    <div class="position-relative">
+                                        <i class="fas fa-shield-check input-group-text-icon"></i>
+                                        <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="Repite la contraseña" required>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-
-                        <!-- Remember Me Checkbox -->
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="remember" name="remember" {{ old('remember') ? 'checked' : '' }}>
-                            <label class="form-check-label fs-7 text-muted" for="remember">
-                                Recordar mi sesión en este dispositivo
-                            </label>
                         </div>
 
                         <!-- Submit Button -->
                         <button type="submit" class="btn btn-sena w-100 mb-3">
-                            <i class="fas fa-right-to-bracket btn-icon-navy me-2"></i>
-                            <span>Iniciar Sesión en SENA Empresa</span>
+                            <i class="fas fa-user-plus me-1" style="color: var(--sena-neon);"></i>
+                            <span>Crear mi Cuenta en SENA Empresa</span>
                         </button>
 
-                        <!-- Enlace directo a Registro -->
-                        <div class="text-center mb-3">
-                            <span class="text-muted fs-7">¿No tienes una cuenta aún?</span>
-                            <a href="{{ route('register', ['redirect' => $targetRedirect]) }}" class="fw-bold text-decoration-none ms-1" style="color: var(--sena-green);">Regístrate aquí</a>
-                        </div>
-
-                        <!-- Demo test credentials helper -->
-                        <div class="p-2 bg-light rounded-3 border text-center fs-8 text-muted">
-                            <span class="fw-bold text-dark d-block mb-1"><i class="fas fa-key text-warning me-1"></i> Credencial de Acceso Rápido:</span>
-                            <span class="badge bg-dark text-white cursor-pointer px-2 py-1 me-1" style="cursor: pointer;" onclick="fillDemo('damendez', '12345678')">
-                                Usuario: <code>damendez</code> (SuperAdmin / Director)
-                            </span>
+                        <!-- Enlace directo al Login -->
+                        <div class="text-center mt-3">
+                            <span class="text-muted fs-7">¿Ya tienes una cuenta registrada?</span>
+                            <a href="{{ route('login', ['redirect' => $targetRedirect]) }}" class="fw-bold text-decoration-none ms-1" style="color: var(--sena-green);">Inicia sesión aquí</a>
                         </div>
                     </form>
                 </div>
 
-                <div class="text-center pt-3 border-top mt-4">
-                    <p class="text-muted fs-7 mb-0">
-                        Centro de Formación Agroindustrial <strong>"La Angostura"</strong><br>
-                        SENA Empresa &copy; {{ date('Y') }} • Todos los derechos reservados.
+                <div class="text-center pt-3 border-top mt-3">
+                    <p class="text-muted fs-8 mb-0">
+                        Centro de Formación Agroindustrial <strong>"La Angostura"</strong> • SENA Empresa &copy; {{ date('Y') }}
                     </p>
                 </div>
             </div>
@@ -314,20 +282,5 @@
         </div>
     </div>
 
-    <!-- Toggle Password Script & Demo Helper -->
-    <script>
-        document.getElementById('togglePassword').addEventListener('click', function () {
-            const passwordInput = document.getElementById('password');
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            this.classList.toggle('fa-eye');
-            this.classList.toggle('fa-eye-slash');
-        });
-
-        function fillDemo(username, password) {
-            document.getElementById('email').value = username;
-            document.getElementById('password').value = password;
-        }
-    </script>
 </body>
 </html>

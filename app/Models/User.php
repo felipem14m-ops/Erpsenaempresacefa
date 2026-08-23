@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Modules\SICA\Entities\Person;
@@ -13,36 +12,26 @@ use Modules\SICA\Entities\Role;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    protected $table = 'usuarios';
+
+    const CREATED_AT = 'creado_en';
+    const UPDATED_AT = 'actualizado_en';
+
     protected $fillable = [
-        'name',
-        'nickname',
-        'person_id',
-        'email',
-        'password',
+        'nombre_completo',
+        'nombre_usuario',
+        'correo',
+        'password_hash',
+        'rol_id',
+        'activo',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password_hash',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -60,11 +49,27 @@ class User extends Authenticatable
     }
 
     /**
-     * Roles asignados al usuario
+     * Rol principal asignado al usuario (Relación con Rol)
+     */
+    public function rol()
+    {
+        return $this->belongsTo(Rol::class, 'rol_id');
+    }
+
+    /**
+     * Roles asignados al usuario (SICA)
      */
     public function roles()
     {
         return $this->belongsToMany(Role::class, 'role_user')->withTimestamps();
+    }
+
+    /**
+     * Para que la autenticación de Laravel use la columna password_hash en lugar de password
+     */
+    public function getAuthPassword()
+    {
+        return $this->password_hash;
     }
 
     /**
@@ -74,6 +79,10 @@ class User extends Authenticatable
     {
         // Si el usuario es superadmin, tiene acceso completo
         if ($this->hasSuperAdmin()) {
+            return true;
+        }
+
+        if ($this->rol && $this->rol->slug === $roleSlug) {
             return true;
         }
 
@@ -89,6 +98,10 @@ class User extends Authenticatable
             return true;
         }
 
+        if ($this->rol && in_array($this->rol->slug, $roles)) {
+            return true;
+        }
+
         return $this->roles->whereIn('slug', $roles)->isNotEmpty();
     }
 
@@ -97,6 +110,10 @@ class User extends Authenticatable
      */
     public function hasSuperAdmin(): bool
     {
+        if ($this->rol && ($this->rol->slug === 'superadmin' || $this->rol->slug === 'admin')) {
+            return true;
+        }
+
         return $this->roles->contains(function ($role) {
             return $role->slug === 'superadmin' || $role->full_access === 'Si';
         });
@@ -107,26 +124,15 @@ class User extends Authenticatable
      */
     public function getFullNameAttribute(): string
     {
-        if ($this->person) {
-            $names = array_filter([
-                $this->person->first_name,
-                $this->person->first_last_name,
-                $this->person->second_last_name
-            ]);
-            if (!empty($names)) {
-                return implode(' ', $names);
-            }
+        if (!empty($this->nombre_completo)) {
+            return $this->nombre_completo;
         }
 
-        if (!empty($this->name)) {
-            return $this->name;
+        if (!empty($this->nombre_usuario)) {
+            return $this->nombre_usuario;
         }
 
-        if (!empty($this->nickname)) {
-            return $this->nickname;
-        }
-
-        return $this->email ?? 'Usuario';
+        return $this->correo ?? 'Usuario';
     }
 
     /**
@@ -134,13 +140,8 @@ class User extends Authenticatable
      */
     public function getPrimaryRoleAttribute(): string
     {
-        if ($this->hasSuperAdmin()) {
-            return 'Super Administrador';
-        }
-
-        $firstRole = $this->roles->first();
-        if ($firstRole) {
-            return $firstRole->name;
+        if ($this->rol) {
+            return $this->rol->nombre;
         }
 
         return 'Usuario';

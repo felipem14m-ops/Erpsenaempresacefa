@@ -19,3 +19,12 @@ Route::get('/', function () {
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::match(['get', 'post'], '/logout', [LoginController::class, 'logout'])->name('logout');
+
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\UserController;
+
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
+
+// Rutas CRUD para Usuarios
+Route::resource('users', UserController::class);

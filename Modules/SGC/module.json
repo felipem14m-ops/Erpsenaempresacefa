@@ -1,0 +1,11 @@
+{
+    "name": "SGC",
+    "alias": "sgc",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\SGC\\Providers\\SGCServiceProvider"
+    ],
+    "files": []
+}

@@ -45,13 +45,14 @@ class BloqueAppSeeder extends Seeder
         // --- APLICATIVOS / SUBMÓDULOS ---
 
         // Submódulos Estratégicos
-        App::updateOrCreate(['name' => 'Dirección'], [
-            'bloque_id' => $estrategico->id,
-            'url' => '/direccion',
-            'color' => '#1b5e20',
-            'icon' => 'fas fa-user-tie',
-            'description' => 'Toma de decisiones directivas, formulación de políticas institucionales, gobierno corporativo y liderazgo.',
-            'description_english' => 'Executive decision making, institutional policies and leadership.'
+        // Submódulo SGC (Sistema de Gestión de Calidad)
+        App::updateOrCreate(['name' => 'SGC'], [
+            'bloque_id' => $apoyo->id,
+            'url' => '/sgc',
+            'color' => '#39A900',
+            'icon' => 'fas fa-file-shield',
+            'description' => 'Gestión documental, control de versiones y aprobación de solicitudes bajo el sistema de gestión de calidad.',
+            'description_english' => 'Document management, version control and request approval under the quality management system.',
         ]);
 
         App::updateOrCreate(['name' => 'Planeación'], [
