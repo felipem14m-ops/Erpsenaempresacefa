@@ -3,15 +3,15 @@
     <!-- Left navbar links -->
     <ul class="navbar-nav align-items-center">
         <li class="nav-item">
-            <a class="nav-link text-secondary" data-widget="pushmenu" href="javascript:void(0)" role="button" title="Colapsar / Expandir Menú">
+            <a class="nav-link text-secondary rounded-3 p-2 d-flex align-items-center justify-content-center" id="pushmenu-toggle-btn" data-widget="pushmenu" href="javascript:void(0)" role="button" title="Colapsar / Expandir Menú" style="width: 38px; height: 38px; cursor: pointer; transition: background-color 0.2s;">
                 <i class="fas fa-bars fs-5"></i>
             </a>
         </li>
         <li class="nav-item d-flex align-items-center ms-2">
-            <a href="{{ route('sgc.index') }}" class="text-decoration-none d-flex align-items-center">
-                <strong class="fs-6 text-dark">SGC</strong>
-                <span class="mx-2 text-secondary opacity-50">|</span>
-                <span class="text-muted small d-none d-sm-inline">Sistema de Gestión de Calidad</span>
+            <a href="{{ route('sgc.index') }}" class="text-decoration-none d-flex align-items-center gap-2">
+                <strong class="fs-6 fw-extrabold" style="font-family: 'Outfit', sans-serif; font-weight: 800; background: linear-gradient(135deg, rgba(0, 23, 36, 0.95) 0%, rgba(0, 77, 32, 0.92) 50%, rgba(57, 169, 0, 0.96) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">SGC</strong>
+                <span class="mx-1 text-secondary opacity-50">|</span>
+                <span class="text-muted small d-none d-sm-inline" style="font-family: 'Plus Jakarta Sans', sans-serif;">Sistema de Gestión de Calidad</span>
             </a>
         </li>
     </ul>

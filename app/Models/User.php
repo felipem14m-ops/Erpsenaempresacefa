@@ -6,6 +6,9 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Modules\SICA\Entities\Person;
 use Modules\SICA\Entities\Role;
 
@@ -21,76 +24,179 @@ class User extends Authenticatable
 
     protected $fillable = [
         'nombre_completo',
+        'documento_identidad',
         'nombre_usuario',
         'correo',
+        'telefono',
         'password_hash',
         'rol_id',
         'activo',
+        'intentos_fallidos',
+        'bloqueado_hasta',
+        'ultimo_acceso',
+        'creado_por',
     ];
 
     protected $hidden = [
         'password_hash',
+        'remember_token',
     ];
 
     protected function casts(): array
     {
         return [
+            'activo'            => 'boolean',
+            'intentos_fallidos' => 'integer',
+            'bloqueado_hasta'   => 'datetime',
+            'ultimo_acceso'     => 'datetime',
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
         ];
     }
 
     /**
-     * Persona vinculada al usuario
+     * Sobrescribe el campo de contraseña para la autenticación de Laravel.
      */
-    public function person()
-    {
-        return $this->belongsTo(Person::class, 'person_id');
-    }
-
-    /**
-     * Rol principal asignado al usuario (Relación con Rol)
-     */
-    public function rol()
-    {
-        return $this->belongsTo(Rol::class, 'rol_id');
-    }
-
-    /**
-     * Roles asignados al usuario (SICA)
-     */
-    public function roles()
-    {
-        return $this->belongsToMany(Role::class, 'role_user')->withTimestamps();
-    }
-
-    /**
-     * Para que la autenticación de Laravel use la columna password_hash en lugar de password
-     */
-    public function getAuthPassword()
+    public function getAuthPassword(): string
     {
         return $this->password_hash;
     }
 
     /**
-     * Verifica si el usuario tiene un rol por slug o si tiene acceso superadmin
+     * Correo electrónico para el restablecimiento de contraseña.
      */
-    public function hasRole(string $roleSlug): bool
+    public function getEmailForPasswordReset(): string
     {
-        // Si el usuario es superadmin, tiene acceso completo
+        return $this->correo;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relaciones del Núcleo Unificado
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Rol principal asignado al usuario.
+     */
+    public function rol(): BelongsTo
+    {
+        return $this->belongsTo(Rol::class, 'rol_id');
+    }
+
+    /**
+     * Sesiones iniciadas por el usuario.
+     */
+    public function sesiones(): HasMany
+    {
+        return $this->hasMany(Sesion::class, 'usuario_id');
+    }
+
+    /**
+     * Notificaciones dirigidas al usuario.
+     */
+    public function notificaciones(): HasMany
+    {
+        return $this->hasMany(Notificacion::class, 'usuario_id');
+    }
+
+    /**
+     * Registros de auditoría generados por el usuario.
+     */
+    public function bitacoras(): HasMany
+    {
+        return $this->hasMany(Bitacora::class, 'usuario_id');
+    }
+
+    /**
+     * Usuario administrador que creó esta cuenta.
+     */
+    public function creador(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'creado_por');
+    }
+
+    /**
+     * Usuarios creados por este usuario.
+     */
+    public function usuariosCreados(): HasMany
+    {
+        return $this->hasMany(User::class, 'creado_por');
+    }
+
+    /**
+     * Persona vinculada (Módulo SICA).
+     */
+    public function person(): BelongsTo
+    {
+        return $this->belongsTo(Person::class, 'person_id');
+    }
+
+    /**
+     * Roles asignados al usuario (Compatibilidad SICA).
+     */
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class, 'role_user')->withTimestamps();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Autorización y Control de Acceso por Módulo
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Verifica si el usuario tiene acceso a un módulo (y acción opcional)
+     * mediante los permisos vinculados a su rol en rol_permisos.
+     *
+     * @param string $modulo Nombre del módulo (SGC, SST, Control_ECP, SIGE, SISGEDI, Apicola, SISIG, core)
+     * @param string|null $accion Acción específica requerida (opcional)
+     */
+    public function tieneAccesoModulo(string $modulo, ?string $accion = null): bool
+    {
+        if (!$this->activo) {
+            return false;
+        }
+
+        // Si el usuario es administrador global, tiene acceso total a todos los módulos
         if ($this->hasSuperAdmin()) {
             return true;
         }
 
-        if ($this->rol && $this->rol->slug === $roleSlug) {
+        // Consulta si el rol principal tiene el permiso asociado al módulo
+        if ($this->rol && $this->rol->tienePermiso($modulo, $accion)) {
             return true;
         }
 
-        return $this->roles->contains('slug', $roleSlug);
+        return false;
     }
 
     /**
-     * Verifica si el usuario tiene alguno de los roles indicados
+     * Verifica si el usuario cuenta con el rol superadmin / administrador.
+     */
+    public function hasSuperAdmin(): bool
+    {
+        if ($this->rol && in_array(strtolower($this->rol->slug), ['superadmin', 'admin', 'administrador'])) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Verifica si el usuario tiene un rol específico por slug.
+     */
+    public function hasRole(string $roleSlug): bool
+    {
+        if ($this->hasSuperAdmin()) {
+            return true;
+        }
+
+        return $this->rol && $this->rol->slug === $roleSlug;
+    }
+
+    /**
+     * Verifica si el usuario tiene alguno de los roles indicados.
      */
     public function hasAnyRole(array $roles): bool
     {
@@ -98,30 +204,15 @@ class User extends Authenticatable
             return true;
         }
 
-        if ($this->rol && in_array($this->rol->slug, $roles)) {
-            return true;
-        }
-
-        return $this->roles->whereIn('slug', $roles)->isNotEmpty();
+        return $this->rol && in_array($this->rol->slug, $roles);
     }
 
-    /**
-     * Verifica si el usuario cuenta con el rol superadmin
-     */
-    public function hasSuperAdmin(): bool
-    {
-        if ($this->rol && ($this->rol->slug === 'superadmin' || $this->rol->slug === 'admin')) {
-            return true;
-        }
+    /*
+    |--------------------------------------------------------------------------
+    | Accessors & Helpers Visuales
+    |--------------------------------------------------------------------------
+    */
 
-        return $this->roles->contains(function ($role) {
-            return $role->slug === 'superadmin' || $role->full_access === 'Si';
-        });
-    }
-
-    /**
-     * Obtiene el nombre completo del usuario a partir de su persona o nickname
-     */
     public function getFullNameAttribute(): string
     {
         if (!empty($this->nombre_completo)) {
@@ -135,21 +226,11 @@ class User extends Authenticatable
         return $this->correo ?? 'Usuario';
     }
 
-    /**
-     * Obtiene el nombre del rol principal del usuario
-     */
     public function getPrimaryRoleAttribute(): string
     {
-        if ($this->rol) {
-            return $this->rol->nombre;
-        }
-
-        return 'Usuario';
+        return $this->rol?->nombre ?? 'Usuario';
     }
 
-    /**
-     * Obtiene las iniciales del usuario para mostrar en el avatar
-     */
     public function getInitialsAttribute(): string
     {
         $name = trim($this->full_name);

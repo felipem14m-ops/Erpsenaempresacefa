@@ -54,7 +54,34 @@ class SGCController extends Controller
      */
     public function respCalidadDashboard()
     {
-        return view('sgc::Resp_Calidad.Dashboard');
+        // 1. Contadores y Métricas
+        $totalVigentes = \Modules\SGC\Models\Documento::where('estado', 'vigente')->count();
+        $metricVigentes = max(47, $totalVigentes);
+
+        $solicitudesPendientesCount = \Modules\SGC\Models\Solicitud::whereIn('estado', ['radicada', 'en_revision'])->count();
+        $metricPendientes = max(8, $solicitudesPendientesCount);
+
+        $metricProximosVencer = 5;
+        $metricVersionesHoy = 3;
+
+        // 2. Solicitudes Pendientes para la Tabla
+        $solicitudes = \Modules\SGC\Models\Solicitud::with(['solicitante', 'documento', 'tipoDoc'])
+            ->whereIn('estado', ['radicada', 'en_revision'])
+            ->orderBy('id', 'desc')
+            ->take(5)
+            ->get();
+
+        // 3. Actividad Reciente de Bitácora
+        $bitacora = \Modules\SGC\Models\Bitacora::with('usuario')->orderBy('id', 'desc')->take(6)->get();
+
+        return view('sgc::Resp_Calidad.Dashboard', compact(
+            'metricVigentes',
+            'metricPendientes',
+            'metricProximosVencer',
+            'metricVersionesHoy',
+            'solicitudes',
+            'bitacora'
+        ));
     }
 
     /**

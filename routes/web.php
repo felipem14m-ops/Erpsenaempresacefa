@@ -4,8 +4,14 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Modules\SICA\Entities\Bloque;
 
-use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\UserController as AdminUsuarioController;
 
+/*
+|--------------------------------------------------------------------------
+| Portal Principal del ERP
+|--------------------------------------------------------------------------
+*/
 Route::get('/', function () {
     $bloques = collect();
     if (Schema::hasTable('bloques')) {
@@ -16,15 +22,38 @@ Route::get('/', function () {
     return view('welcome', compact('bloques'));
 })->name('home');
 
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login'])->name('login.post');
-Route::match(['get', 'post'], '/logout', [LoginController::class, 'logout'])->name('logout');
+/*
+|--------------------------------------------------------------------------
+| Autenticación Institucional (Login / Logout con Auditoría y Bloqueo)
+|--------------------------------------------------------------------------
+*/
+Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
+Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('login.post');
+Route::match(['get', 'post'], '/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\UserController;
+// Deshabilitación del registro público (Regla de negocio: creación exclusiva por Administrador)
+Route::get('/register', function () {
+    return redirect()->route('login')->with('info', 'El registro público está deshabilitado. Solicite su cuenta al Administrador del Sistema.');
+})->name('register');
+Route::post('/register', function () {
+    return redirect()->route('login')->with('info', 'El registro público está deshabilitado. Solicite su cuenta al Administrador del Sistema.');
+})->name('register.post');
 
-Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
-Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
+/*
+|--------------------------------------------------------------------------
+| Panel Administrativo de Usuarios del Núcleo ERP (/admin/usuarios)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'acceso.modulo:core'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('usuarios', AdminUsuarioController::class)->parameters(['usuarios' => 'usuario']);
+    Route::post('usuarios/{usuario}/toggle-status', [AdminUsuarioController::class, 'toggleStatus'])->name('usuarios.toggle-status');
 
-// Rutas CRUD para Usuarios
-Route::resource('users', UserController::class);
+    // Aliases en inglés
+    Route::resource('users', AdminUsuarioController::class)->parameters(['users' => 'usuario']);
+    Route::post('users/{usuario}/toggle-status', [AdminUsuarioController::class, 'toggleStatus'])->name('users.toggle-status');
+});
+
+// Alias directo para gestión de usuarios
+Route::middleware(['auth', 'acceso.modulo:core'])->group(function () {
+    Route::resource('users', AdminUsuarioController::class)->parameters(['users' => 'usuario']);
+});

@@ -287,10 +287,9 @@
                             <span>Iniciar Sesión en SENA Empresa</span>
                         </button>
 
-                        <!-- Enlace directo a Registro -->
+                        <!-- Mensaje de Cuentas Administradas -->
                         <div class="text-center mb-3">
-                            <span class="text-muted fs-7">¿No tienes una cuenta aún?</span>
-                            <a href="{{ route('register', ['redirect' => $targetRedirect]) }}" class="fw-bold text-decoration-none ms-1" style="color: var(--sena-green);">Regístrate aquí</a>
+                            <span class="text-muted fs-8">Las cuentas de usuario son aprovisionadas exclusivamente por el Administrador Institucional.</span>
                         </div>
 
                         <!-- Demo test credentials helper -->

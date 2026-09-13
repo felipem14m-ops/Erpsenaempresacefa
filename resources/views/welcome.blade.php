@@ -1507,7 +1507,7 @@
             if (lower.includes('qué es') || lower.includes('que es') || lower.includes('sena empresa')) {
               response = '🏢 <strong>SENA Empresa</strong> es un modelo didáctico de formación profesional en el Centro Agroindustrial "La Angostura" (Campoalegre - Huila). Permite a los aprendices vivir la operación real de una empresa en áreas administrativas, productivas y comerciales.';
             } else if (lower.includes('proceso') || lower.includes('erp') || lower.includes('modulo') || lower.includes('módulo')) {
-              response = '📊 <strong>Procesos ERP SENA Empresa:</strong><br>• 🟢 <strong>Estratégicos:</strong> Planeación e Indicadores.<br>• 🔵 <strong>Misionales:</strong> Inventario, Ventas y Compras.<br>• 🟠 <strong>Apoyo:</strong> Contabilidad y Talento Humano.<br><br><a href="#modules" onclick="document.getElementById(\'senaBotChat\').classList.remove(\'active\')">Ir a Procesos ERP &rarr;</a>';
+              response = '📊 <strong>Procesos ERP SENA Empresa:</strong><br>• 🟢 <strong>Estratégicos:</strong> SIGE.<br>• 🔵 <strong>Misionales:</strong> Control ECP, Apicola y SISIG.<br>• 🟠 <strong>Apoyo:</strong> SST, SISGEDI y SGC.<br><br><a href="#modules" onclick="document.getElementById(\'senaBotChat\').classList.remove(\'active\')">Ir a Procesos ERP &rarr;</a>';
             } else if (lower.includes('organigrama') || lower.includes('estructura')) {
               response = '🗺️ El <strong>Organigrama de SENA Empresa</strong> muestra la jerarquía desde la Subdirección y Coordinación hasta los Gerentes (Administrativo, Producción, Comercial), Gestores y Aprendices.<br><br><a href="#organigrama" onclick="document.getElementById(\'senaBotChat\').classList.remove(\'active\')">Ver Organigrama Completo &rarr;</a>';
             } else if (lower.includes('noticia') || lower.includes('novedad')) {
@@ -1571,88 +1571,81 @@
 
     <script>
       const moduleData = {
-        planeacion: {
-          title: "Submódulo de Planeación",
-          category: "Procesos Estratégicos",
-          icon: "fas fa-clipboard-list text-success",
-          desc: "Herramienta de direccionamiento estratégico para la formulación de planes de acción anuales, metas organizacionales y distribución de objetivos en las unidades de producción de SENA Empresa.",
-          features: [
-            "Formulación y aprobación de planes de acción por área.",
-            "Asignación de presupuestos y metas periódicas.",
-            "Seguimiento a planes de mejora e investigación aplicada.",
-            "Consolidación de informes gerenciales para la Subdirección."
-          ]
-        },
-        indicadores: {
-          title: "Submódulo de Indicadores",
+        sige: {
+          title: "Módulo SIGE",
           category: "Procesos Estratégicos",
           icon: "fas fa-chart-line text-success",
-          desc: "Tablero de control ejecutivo y evaluación continua de KPIs (Key Performance Indicators) empresariales, académicos y de rendimiento de SENA Empresa.",
+          desc: "Sistema Integrado de Gestión Empresarial. Herramienta de direccionamiento estratégico para la formulación de metas organizacionales, planificación y toma de decisiones en SENA Empresa.",
           features: [
-            "Medición de efectividad en ventas y producción agroindustrial.",
-            "Gráficos analíticos de rendimiento por unidad productiva.",
-            "Monitoreo de cumplimiento de aprendices en turnos.",
-            "Exportación de reportes ejecutivos en PDF y Excel."
+            "Direccionamiento estratégico y formulación de metas institucionales.",
+            "Tablero de control ejecutivo y evaluación de indicadores.",
+            "Consolidación de informes gerenciales y seguimiento de compromisos."
           ]
         },
-        inventario: {
-          title: "Submódulo de Inventario",
+        control_ecp: {
+          title: "Módulo Control ECP",
           category: "Procesos Misionales",
-          icon: "fas fa-boxes text-primary",
-          desc: "Control automatizado de bodegas, existencias de insumos agrícolas, pecuarios y agroindustriales, materias primas y productos terminados.",
+          icon: "fas fa-user-graduate text-primary",
+          desc: "Control de Etapa Productiva. Administración, seguimiento y evaluación del desempeño de aprendices en turnos productivos y unidades operativas.",
           features: [
-            "Trazabilidad de entradas, salidas y transferencias entre bodegas.",
-            "Alertas automáticas de nivel mínimo de stock.",
-            "Kardex valorizado por método PEPS/Promedio Ponderado.",
-            "Control de lotes y fechas de vencimiento de alimentos procesados."
+            "Programación y rotación de turnos operacionales por unidad productiva.",
+            "Control de asistencia y seguimiento de aprendices en etapa productiva.",
+            "Bitácoras de trabajo formativo y evaluación de competencias."
           ]
         },
-        ventas: {
-          title: "Submódulo de Ventas",
+        apicola: {
+          title: "Módulo Apicola",
           category: "Procesos Misionales",
-          icon: "fas fa-cash-register text-primary",
-          desc: "Gestión de comercialización y Puntos de Venta (POS) para los productos elaborados por los aprendices en el Centro La Angostura (lácteos, cárnicos, café, panadería).",
+          icon: "fas fa-archive text-warning",
+          desc: "Gestión integral de la unidad de producción apícola, monitoreo técnico del apiario, inventario y cosecha de miel y derivados.",
           features: [
-            "Terminal Punto de Venta (POS) rápido e intuitivo.",
-            "Generación de comprobantes y recibos de venta.",
-            "Cierre de caja diario y arqueos por turno de aprendiz.",
-            "Integración en tiempo real con la reducción de inventario."
+            "Registro, inspección y estado de colmenas del apiario.",
+            "Control de cosechas de miel, polen y propóleo.",
+            "Trazabilidad de insumos y rendimiento de producción apícola."
           ]
         },
-        compras: {
-          title: "Submódulo de Compras",
+        sisig: {
+          title: "Módulo SISIG",
           category: "Procesos Misionales",
-          icon: "fas fa-shopping-cart text-primary",
-          desc: "Administración del ciclo de abastecimiento, solicitudes de requisición de insumos, cotizaciones de proveedores y órdenes de compra.",
+          icon: "fas fa-tractor text-info",
+          desc: "Sistema Integrado de Información Ganadera y Granja. Control zootécnico, pesaje, sanidad animal y trazabilidad pecuaria del Centro La Angostura.",
           features: [
-            "Registro y calificación de proveedores regionales.",
-            "Gestión de órdenes de compra con flujo de aprobación.",
-            "Recepción e inspección de materias primas en almacén.",
-            "Integración automática con cuentas por pagar de Contabilidad."
+            "Ficha zootécnica y trazabilidad de semovientes y especies pecuarias.",
+            "Control de pesaje, plan de vacunación y sanidad animal.",
+            "Registro de producción pecuaria y manejo de praderas."
           ]
         },
-        contabilidad: {
-          title: "Submódulo de Contabilidad",
+        sst: {
+          title: "Módulo SST",
           category: "Procesos de Apoyo",
-          icon: "fas fa-file-invoice-dollar text-warning",
-          desc: "Registro contable y financiero de todas las operaciones comerciales, comprobantes de ingreso, egreso, asientos contables y estados financieros.",
+          icon: "fas fa-shield-halved text-danger",
+          desc: "Seguridad y Salud en el Trabajo. Identificación de peligros, evaluación de riesgos laborales, dotación de EPP y protocolos de bioseguridad.",
           features: [
-            "Plan Único de Cuentas (PUC) adaptado a la empresa didáctica.",
-            "Emisión de comprobantes diarios y libro mayor.",
-            "Generación de Balance General y Estado de Resultados.",
-            "Auditoría y control de costos de producción agroindustrial."
+            "Matriz de identificación de peligros y evaluación de riesgos.",
+            "Control de dotación y entrega de Elementos de Protección Personal (EPP).",
+            "Reporte e investigación de incidentes y protocolos de seguridad."
           ]
         },
-        talento: {
-          title: "Submódulo de Talento Humano",
+        sisgedi: {
+          title: "Módulo SISGEDI",
           category: "Procesos de Apoyo",
-          icon: "fas fa-users-cog text-warning",
-          desc: "Gestión del capital humano, asignación y rotación de turnos de aprendices (rutinarios y especiales), instructores líderes y evaluación de competencias.",
+          icon: "fas fa-folder-open text-purple",
+          desc: "Sistema de Gestión Documental e Información. Radicación, trazabilidad de correspondencia institucional y administración del archivo digital.",
           features: [
-            "Programación de turnos operacionales por unidad de producción.",
-            "Control biométrico / digital de asistencia de aprendices.",
-            "Evaluación de desempeño y competencias comportamentales.",
-            "Directorio de funcionarios, instructores y pasantes."
+            "Radicación de comunicaciones y correspondencia interna/externa.",
+            "Control de archivo digital centralizado y series documentales.",
+            "Flujo de revisión, aprobación y trazabilidad de documentos."
+          ]
+        },
+        sgc: {
+          title: "Módulo SGC",
+          category: "Procesos de Apoyo",
+          icon: "fas fa-file-shield text-success",
+          desc: "Sistema de Gestión de Calidad. Control del listado maestro documental, administración de versiones, formatos normalizados y acciones de mejora continua.",
+          features: [
+            "Listado maestro y control de versiones documentales normalizadas.",
+            "Flujo de solicitudes para creación, actualización o anulación de documentos.",
+            "Seguimiento a auditorías de calidad y planes de mejoramiento."
           ]
         }
       };

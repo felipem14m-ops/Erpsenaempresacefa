@@ -27,7 +27,7 @@ class BloqueAppSeeder extends Seeder
         // 2. Crear Bloque: Procesos Misionales
         $misional = Bloque::updateOrCreate(['slug' => 'misionales'], [
             'name' => 'Procesos Misionales',
-            'description' => 'Operación central de SENA Empresa: control de stock, comercialización y aprovisionamiento.',
+            'description' => 'Operación central de SENA Empresa: gestión agropecuaria, unidades productivas y turnos formativos.',
             'icon' => 'fas fa-bullseye',
             'color' => '#00324D',
             'order_index' => 2
@@ -36,88 +36,82 @@ class BloqueAppSeeder extends Seeder
         // 3. Crear Bloque: Procesos de Apoyo
         $apoyo = Bloque::updateOrCreate(['slug' => 'apoyos'], [
             'name' => 'Procesos de Apoyo',
-            'description' => 'Soporte contable, financiero y gestión integral del capital humano.',
+            'description' => 'Seguridad laboral, gestión documental centralizada y sistema de gestión de calidad.',
             'icon' => 'fas fa-handshake',
             'color' => '#e65100',
             'order_index' => 3
         ]);
 
+        // Eliminar aplicaciones anteriores que ya no forman parte de la arquitectura del ERP
+        $validAppNames = ['SIGE', 'Control ECP', 'Apicola', 'SISIG', 'SST', 'SISGEDI', 'SGC'];
+        App::whereNotIn('name', array_merge($validAppNames, ['SICA']))->delete();
+
         // --- APLICATIVOS / SUBMÓDULOS ---
 
-        // Submódulos Estratégicos
-        // Submódulo SGC (Sistema de Gestión de Calidad)
+        // 1. Procesos Estratégicos
+        App::updateOrCreate(['name' => 'SIGE'], [
+            'bloque_id' => $estrategico->id,
+            'url' => '/direccion',
+            'color' => '#39A900',
+            'icon' => 'fas fa-chart-line',
+            'description' => 'Sistema Integrado de Gestión Empresarial. Direccionamiento estratégico, planeación institucional, formulación de metas y toma de decisiones.',
+            'description_english' => 'Integrated Enterprise Management System. Strategic planning, institutional goals and executive decision making.'
+        ]);
+
+        // 2. Procesos Misionales
+        App::updateOrCreate(['name' => 'Control ECP'], [
+            'bloque_id' => $misional->id,
+            'url' => '/control-ecp',
+            'color' => '#00324D',
+            'icon' => 'fas fa-user-graduate',
+            'description' => 'Control de Etapa Productiva. Administración y seguimiento del desempeño de aprendices en turnos productivos y unidades operativas.',
+            'description_english' => 'Productive Stage Control. Management and tracking of apprentices in operational shifts.'
+        ]);
+
+        App::updateOrCreate(['name' => 'Apicola'], [
+            'bloque_id' => $misional->id,
+            'url' => '/apicola',
+            'color' => '#f57c00',
+            'icon' => 'fas fa-archive',
+            'description' => 'Gestión y control integral de la unidad apícola, monitoreo de colmenas, inventario técnico, producción de miel y derivados.',
+            'description_english' => 'Comprehensive management and control of the beekeeping unit, hive monitoring, honey production and derivatives.'
+        ]);
+
+        App::updateOrCreate(['name' => 'SISIG'], [
+            'bloque_id' => $misional->id,
+            'url' => '/sisig',
+            'color' => '#0288d1',
+            'icon' => 'fas fa-tractor',
+            'description' => 'Sistema Integrado de Información Ganadera y Granja. Control zootécnico, pesajes, sanidad animal y trazabilidad pecuaria.',
+            'description_english' => 'Integrated Livestock and Farm Information System. Zootechnical control, weighing, animal health and livestock traceability.'
+        ]);
+
+        // 3. Procesos de Apoyo
+        App::updateOrCreate(['name' => 'SST'], [
+            'bloque_id' => $apoyo->id,
+            'url' => '/sst',
+            'color' => '#d32f2f',
+            'icon' => 'fas fa-shield-halved',
+            'description' => 'Seguridad y Salud en el Trabajo. Prevención de riesgos laborales, inspecciones preventivas, dotación de EPP y protocolos de bioseguridad.',
+            'description_english' => 'Occupational Health and Safety. Occupational risk prevention, preventive inspections and biosecurity protocols.'
+        ]);
+
+        App::updateOrCreate(['name' => 'SISGEDI'], [
+            'bloque_id' => $apoyo->id,
+            'url' => '/sisgedi',
+            'color' => '#7b1fa2',
+            'icon' => 'fas fa-folder-open',
+            'description' => 'Sistema de Gestión Documental e Información. Radicación, trazabilidad de correspondencia institucional y archivo digital centralizado.',
+            'description_english' => 'Document and Information Management System. Correspondence filing, traceability and centralized digital archive.'
+        ]);
+
         App::updateOrCreate(['name' => 'SGC'], [
             'bloque_id' => $apoyo->id,
             'url' => '/sgc',
             'color' => '#39A900',
             'icon' => 'fas fa-file-shield',
-            'description' => 'Gestión documental, control de versiones y aprobación de solicitudes bajo el sistema de gestión de calidad.',
-            'description_english' => 'Document management, version control and request approval under the quality management system.',
-        ]);
-
-        App::updateOrCreate(['name' => 'Planeación'], [
-            'bloque_id' => $estrategico->id,
-            'url' => '/planeacion',
-            'color' => '#39A900',
-            'icon' => 'fas fa-clipboard-list',
-            'description' => 'Planificación estratégica, formulación de metas organizacionales, plan de acción anual y asignación de metas.',
-            'description_english' => 'Strategic planning, organizational goal setting and annual action plans.'
-        ]);
-
-        App::updateOrCreate(['name' => 'Indicadores'], [
-            'bloque_id' => $estrategico->id,
-            'url' => '/indicadores',
-            'color' => '#20c997',
-            'icon' => 'fas fa-chart-line',
-            'description' => 'Tablero de control ejecutivo, medición de KPIs de rendimiento empresarial, evaluación de resultados y estadísticas.',
-            'description_english' => 'Executive KPI dashboard, enterprise performance measurement and statistics.'
-        ]);
-
-        // Submódulos Misionales
-        App::updateOrCreate(['name' => 'Inventario'], [
-            'bloque_id' => $misional->id,
-            'url' => '/inventario',
-            'color' => '#00324D',
-            'icon' => 'fas fa-boxes',
-            'description' => 'Control de stock en bodegas, trazabilidad de insumos agroindustriales, materias primas y almacenes.',
-            'description_english' => 'Warehouse stock control, agro-industrial inputs and raw material traceability.'
-        ]);
-
-        App::updateOrCreate(['name' => 'Ventas'], [
-            'bloque_id' => $misional->id,
-            'url' => '/ventas',
-            'color' => '#0288d1',
-            'icon' => 'fas fa-cash-register',
-            'description' => 'Puntos de venta (POS), comercialización de productos del centro de formación y facturación rápida.',
-            'description_english' => 'Points of sale (POS), product commercialization and fast billing.'
-        ]);
-
-        App::updateOrCreate(['name' => 'Compras'], [
-            'bloque_id' => $misional->id,
-            'url' => '/compras',
-            'color' => '#0097a7',
-            'icon' => 'fas fa-shopping-cart',
-            'description' => 'Gestión de proveedores, cotizaciones, solicitudes de insumos y órdenes de adquisición.',
-            'description_english' => 'Supplier management, quotations, supply requests and purchase orders.'
-        ]);
-
-        // Submódulos de Apoyo
-        App::updateOrCreate(['name' => 'Contabilidad'], [
-            'bloque_id' => $apoyo->id,
-            'url' => '/contabilidad',
-            'color' => '#f57c00',
-            'icon' => 'fas fa-file-invoice-dollar',
-            'description' => 'Gestión contable y financiera, registro de comprobantes, presupuestos, asientos y balances generales.',
-            'description_english' => 'Financial and accounting management, vouchers, budgets and balances.'
-        ]);
-
-        App::updateOrCreate(['name' => 'Talento Humano'], [
-            'bloque_id' => $apoyo->id,
-            'url' => '/talento-humano',
-            'color' => '#ff9800',
-            'icon' => 'fas fa-users-cog',
-            'description' => 'Administración de aprendices, instructores, asignación de turnos operacionales en SENA Empresa y control de asistencia.',
-            'description_english' => 'Management of apprentices, instructors, operational shifts and attendance control.'
+            'description' => 'Sistema de Gestión de Calidad. Control documental, administración de versiones, formatos normalizados, auditorías y acciones de mejora.',
+            'description_english' => 'Quality Management System. Document control, version management, standardized forms, audits and improvement actions.'
         ]);
     }
 }

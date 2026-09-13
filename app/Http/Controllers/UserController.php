@@ -12,10 +12,37 @@ class UserController extends Controller
     /**
      * Muestra la lista de usuarios (index).
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::with('rol')->get();
-        return view('users.index', compact('users'));
+        $search = $request->query('search');
+        $rolId = $request->query('rol_id');
+
+        $query = User::with('rol')->orderBy('id', 'desc');
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nombre_completo', 'LIKE', "%{$search}%")
+                    ->orWhere('nombre_usuario', 'LIKE', "%{$search}%")
+                    ->orWhere('correo', 'LIKE', "%{$search}%");
+            });
+        }
+
+        if (!empty($rolId) && $rolId !== 'all') {
+            $query->where('rol_id', $rolId);
+        }
+
+        $users = $query->paginate(10)->withQueryString();
+        $roles = Rol::orderBy('id')->get();
+
+        if (view()->exists('users.index')) {
+            return view('users.index', compact('users', 'roles', 'search', 'rolId'));
+        }
+
+        if (view()->exists('admin.usuarios.index')) {
+            return view('admin.usuarios.index', compact('users', 'roles', 'search', 'rolId'));
+        }
+
+        return redirect()->route('home')->with('info', 'Listado de usuarios.');
     }
 
     /**
@@ -24,7 +51,10 @@ class UserController extends Controller
     public function create()
     {
         $roles = Rol::all();
-        return view('users.create', compact('roles'));
+        if (view()->exists('users.create')) {
+            return view('users.create', compact('roles'));
+        }
+        return redirect()->route('home');
     }
 
     /**
@@ -34,10 +64,14 @@ class UserController extends Controller
     {
         $request->validate([
             'nombre_completo' => 'required|string|max:255',
-            'nombre_usuario' => 'required|string|max:255|unique:usuarios',
-            'correo' => 'required|string|email|max:255|unique:usuarios',
+            'nombre_usuario' => 'required|string|max:255|unique:usuarios,nombre_usuario',
+            'correo' => 'required|string|email|max:255|unique:usuarios,correo',
             'password' => 'required|string|min:8|confirmed',
             'rol_id' => 'required|exists:roles,id',
+        ], [
+            'nombre_usuario.unique' => 'El nombre de usuario ya está en uso.',
+            'correo.unique' => 'El correo electrónico ya está registrado.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
         ]);
 
         User::create([
@@ -46,10 +80,10 @@ class UserController extends Controller
             'correo' => $request->correo,
             'password_hash' => Hash::make($request->password),
             'rol_id' => $request->rol_id,
-            'activo' => true,
+            'activo' => $request->boolean('activo', true),
         ]);
 
-        return redirect()->route('users.index')->with('success', 'Usuario creado exitosamente.');
+        return redirect()->back()->with('success', 'Usuario creado exitosamente.');
     }
 
     /**
@@ -58,7 +92,10 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $roles = Rol::all();
-        return view('users.edit', compact('user', 'roles'));
+        if (view()->exists('users.edit')) {
+            return view('users.edit', compact('user', 'roles'));
+        }
+        return redirect()->route('home');
     }
 
     /**
@@ -79,17 +116,28 @@ class UserController extends Controller
             'nombre_usuario' => $request->nombre_usuario,
             'correo' => $request->correo,
             'rol_id' => $request->rol_id,
-            'activo' => $request->has('activo') ? true : false,
+            'activo' => $request->has('activo') ? $request->boolean('activo') : $user->activo,
         ];
 
-        // Solo actualizar la contraseña si se ingresó una nueva
         if ($request->filled('password')) {
             $data['password_hash'] = Hash::make($request->password);
         }
 
         $user->update($data);
 
-        return redirect()->route('users.index')->with('success', 'Usuario actualizado exitosamente.');
+        return redirect()->back()->with('success', 'Usuario actualizado exitosamente.');
+    }
+
+    /**
+     * Alterna el estado activo/inactivo del usuario.
+     */
+    public function toggleStatus(User $user)
+    {
+        $user->activo = !$user->activo;
+        $user->save();
+
+        $estado = $user->activo ? 'activado' : 'desactivado';
+        return redirect()->back()->with('success', "El usuario {$user->full_name} ha sido {$estado}.");
     }
 
     /**
@@ -97,8 +145,9 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
+        $name = $user->full_name;
         $user->delete();
 
-        return redirect()->route('users.index')->with('success', 'Usuario eliminado exitosamente.');
+        return redirect()->back()->with('success', "Usuario '{$name}' eliminado correctamente.");
     }
 }

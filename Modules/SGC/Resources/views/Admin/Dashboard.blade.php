@@ -54,7 +54,7 @@
 
     <!-- Stat 3: Usuarios Activos (Link to Users index) -->
     <div class="col-12 col-sm-6 col-xl-3">
-        <a href="{{ route('sgc.users.index') }}" class="text-decoration-none d-block h-100">
+        <a href="{{ route('sgc.usuarios.index') }}" class="text-decoration-none d-block h-100">
             <div class="card border rounded-4 p-3 bg-white shadow-sm h-100" style="transition: transform 0.2s ease;">
                 <div class="d-flex align-items-center gap-3">
                     <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px; background-color: #ebf5ff; color: #3b82f6;">

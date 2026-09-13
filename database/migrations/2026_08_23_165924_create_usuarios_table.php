@@ -25,8 +25,10 @@ return new class extends Migration
             $table->timestamp('creado_en')->useCurrent();
             $table->timestamp('actualizado_en')->useCurrent();
 
+            $table->rememberToken();
+
             $table->foreign('rol_id')->references('id')->on('roles');
-});
+        });
     }
 
     /**

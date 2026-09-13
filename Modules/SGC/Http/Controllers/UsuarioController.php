@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Models\Rol;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Modules\SGC\Http\Requests\Usuario\StoreUsuarioRequest;
+use Modules\SGC\Http\Requests\Usuario\UpdateUsuarioRequest;
 
 class UsuarioController extends Controller
 {
@@ -43,60 +45,34 @@ class UsuarioController extends Controller
     }
 
     /**
-     * Guarda un nuevo usuario creado desde el módulo SGC.
+     * Guarda un nuevo usuario en el SGC utilizando StoreUsuarioRequest.
      */
-    public function store(Request $request)
+    public function store(StoreUsuarioRequest $request)
     {
-        $request->validate([
-            'nombre_completo' => 'required|string|max:255',
-            'nombre_usuario' => 'required|string|max:255|unique:usuarios,nombre_usuario',
-            'correo' => 'required|string|email|max:255|unique:usuarios,correo',
-            'rol_id' => 'required|exists:roles,id',
-            'password' => 'required|string|min:8',
-        ], [
-            'nombre_usuario.unique' => 'El nombre de usuario ya está en uso.',
-            'correo.unique' => 'El correo electrónico ya está registrado.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
-        ]);
+        $data = $request->validated();
+        $data['password_hash'] = Hash::make($request->password);
+        $data['activo'] = $request->boolean('activo', true);
+        unset($data['password']);
 
-        User::create([
-            'nombre_completo' => $request->nombre_completo,
-            'nombre_usuario' => $request->nombre_usuario,
-            'correo' => $request->correo,
-            'rol_id' => $request->rol_id,
-            'password_hash' => Hash::make($request->password),
-            'activo' => $request->has('activo') ? true : false,
-        ]);
+        User::create($data);
 
         return redirect()->back()->with('success', 'Usuario registrado exitosamente en el módulo SGC.');
     }
 
     /**
-     * Actualiza la información de un usuario existente.
+     * Actualiza la información de un usuario existente utilizando UpdateUsuarioRequest.
      */
-    public function update(Request $request, $id)
+    public function update(UpdateUsuarioRequest $request, $id)
     {
         $user = User::findOrFail($id);
-
-        $request->validate([
-            'nombre_completo' => 'required|string|max:255',
-            'nombre_usuario' => 'required|string|max:255|unique:usuarios,nombre_usuario,' . $user->id,
-            'correo' => 'required|string|email|max:255|unique:usuarios,correo,' . $user->id,
-            'rol_id' => 'required|exists:roles,id',
-            'password' => 'nullable|string|min:8',
-        ]);
-
-        $data = [
-            'nombre_completo' => $request->nombre_completo,
-            'nombre_usuario' => $request->nombre_usuario,
-            'correo' => $request->correo,
-            'rol_id' => $request->rol_id,
-            'activo' => $request->has('activo') ? true : false,
-        ];
+        $data = $request->validated();
 
         if ($request->filled('password')) {
             $data['password_hash'] = Hash::make($request->password);
         }
+        unset($data['password']);
+
+        $data['activo'] = $request->boolean('activo');
 
         $user->update($data);
 
