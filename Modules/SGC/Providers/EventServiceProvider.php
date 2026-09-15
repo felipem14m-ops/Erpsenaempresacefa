@@ -11,7 +11,14 @@ class EventServiceProvider extends ServiceProvider
      *
      * @var array<string, array<int, string>>
      */
-    protected $listen = [];
+    protected $listen = [
+        \Modules\SGC\Events\SolicitudRadicada::class => [
+            \Modules\SGC\Listeners\NotificarResponsableCalidad::class,
+        ],
+        \Modules\SGC\Events\SolicitudRespondida::class => [
+            \Modules\SGC\Listeners\NotificarLiderArea::class,
+        ],
+    ];
 
     /**
      * Indicates if events should be discovered.

@@ -13,7 +13,8 @@ use Modules\SGC\Models\TipoDocumento;
 use Modules\SGC\Models\Documento;
 use Modules\SGC\Models\Bitacora;
 use Modules\SGC\Http\Requests\Solicitud\StoreSolicitudRequest;
-
+use Modules\SGC\Events\SolicitudRadicada;
+use Modules\SGC\Events\SolicitudRespondida;
 class SolicitudController extends Controller
 {
     /**
@@ -155,6 +156,8 @@ class SolicitudController extends Controller
                 ['estado' => 'radicada'],
                 ['estado' => 'aprobada', 'observaciones' => $solicitud->observaciones_resp]
             );
+
+            event(new SolicitudRespondida($solicitud));
         }
 
         return redirect()->route('sgc.solicitudes.index')
@@ -185,6 +188,8 @@ class SolicitudController extends Controller
                 ['estado' => 'radicada'],
                 ['estado' => 'rechazada', 'observaciones' => $solicitud->observaciones_resp]
             );
+
+            event(new SolicitudRespondida($solicitud));
         }
 
         return redirect()->route('sgc.solicitudes.index')
@@ -325,6 +330,8 @@ class SolicitudController extends Controller
                     'area_id' => $sol->area_id
                 ]
             );
+
+            event(new SolicitudRadicada($sol));
 
             return $sol;
         });
