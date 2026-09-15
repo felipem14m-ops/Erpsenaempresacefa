@@ -35,12 +35,17 @@ class SGCServiceProvider extends ModuleServiceProvider
     ];
 
     /**
-     * Define module schedules.
-     * 
-     * @param $schedule
+     * Bootstrap any application services.
+     *
+     * @return void
      */
-    // protected function configureSchedules(Schedule $schedule): void
-    // {
-    //     $schedule->command('inspire')->hourly();
-    // }
+    public function boot(): void
+    {
+        parent::boot();
+
+        \Illuminate\Support\Facades\View::composer(
+            ['sgc::layouts.NavbarAdmin', 'sgc::Lider_Area.Dashboard', 'sgc::Lider_Area.*'],
+            \Modules\SGC\Http\ViewComposers\NotificacionesComposer::class
+        );
+    }
 }
