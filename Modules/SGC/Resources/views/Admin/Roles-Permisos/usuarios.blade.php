@@ -65,5 +65,15 @@
             </tbody>
         </table>
     </div>
+
+    <!-- Card Footer with Pagination -->
+    <div class="card-footer bg-white border-top px-4 py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div class="text-muted small">
+            Mostrando {{ $usuarios->firstItem() ?? 0 }}-{{ $usuarios->lastItem() ?? 0 }} de {{ $usuarios->total() }} usuarios con acceso
+        </div>
+        <div>
+            {{ $usuarios->links('sgc::layouts.partials.pagination') }}
+        </div>
+    </div>
 </div>
 @endsection

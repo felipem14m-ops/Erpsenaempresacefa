@@ -54,13 +54,19 @@
                     <!-- 2. Solicitudes -->
                     @php
                         $isHistorialActive = request()->routeIs('sgc.lider_area.solicitudes.*') || request()->routeIs('sgc.solicitudes.*');
+                        $liderPendingCount = auth()->check() ? \Modules\SGC\Models\Solicitud::where('solicitado_por', auth()->id())->whereIn('estado', ['radicada', 'en_revision'])->count() : 0;
                     @endphp
                     <li class="nav-item">
                         <a href="{{ route('sgc.lider_area.solicitudes.index') }}" 
-                           class="nav-link d-flex align-items-center gap-3 {{ $isHistorialActive ? 'active' : '' }}" 
+                           class="nav-link d-flex align-items-center justify-content-between gap-2 {{ $isHistorialActive ? 'active' : '' }}" 
                            title="Solicitudes">
-                            <i class="nav-icon fas fa-clock-rotate-left"></i>
-                            <p class="mb-0 text-truncate">Solicitudes</p>
+                            <div class="d-flex align-items-center gap-3 overflow-hidden">
+                                <i class="nav-icon fas fa-file-circle-check"></i>
+                                <p class="mb-0 text-truncate">Solicitudes</p>
+                            </div>
+                            @if($liderPendingCount > 0)
+                                <span class="badge rounded-pill bg-warning text-dark px-2 py-0.5" style="font-size: 10px;">{{ $liderPendingCount }}</span>
+                            @endif
                         </a>
                     </li>
 

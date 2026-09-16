@@ -98,12 +98,25 @@ Route::prefix('sgc')->name('sgc.')->group(function () {
 
         // Aliases para Líder de Área
         Route::get('/lider-area/solicitudes', [\Modules\SGC\Http\Controllers\SolicitudController::class, 'index'])->name('lider_area.solicitudes.index');
+        Route::post('/lider-area/solicitudes', [\Modules\SGC\Http\Controllers\SolicitudController::class, 'store'])->name('lider_area.solicitudes.store');
         Route::get('/lider-area/solicitudes/{id}', [\Modules\SGC\Http\Controllers\SolicitudController::class, 'show'])->name('lider_area.solicitudes.show');
+        Route::get('/lider-area/solicitudes/{id}/download-adjunto', [\Modules\SGC\Http\Controllers\SolicitudController::class, 'downloadAdjunto'])->name('lider_area.solicitudes.download-adjunto');
 
         // Reportes del SGC (Administrador e Indicadores de Calidad)
         Route::get('/reportes', [\Modules\SGC\Http\Controllers\ReportesController::class, 'index'])->name('reportes.index');
         Route::get('/reportes/export/excel', [\Modules\SGC\Http\Controllers\ReportesController::class, 'exportExcel'])->name('reportes.export.excel');
         Route::get('/admin/reportes', [\Modules\SGC\Http\Controllers\ReportesController::class, 'index'])->name('admin.reportes.index');
+
+        // Trazabilidad y Auditoría Documental SGC
+        Route::get('/trazabilidad', [\Modules\SGC\Http\Controllers\TrazabilidadController::class, 'index'])->name('trazabilidad.index');
+        Route::get('/trazabilidad/export', [\Modules\SGC\Http\Controllers\TrazabilidadController::class, 'export'])->name('trazabilidad.export');
+        Route::get('/trazabilidad/{id}', [\Modules\SGC\Http\Controllers\TrazabilidadController::class, 'show'])->name('trazabilidad.show');
+        Route::get('/admin/trazabilidad', [\Modules\SGC\Http\Controllers\TrazabilidadController::class, 'index'])->name('admin.trazabilidad.index');
+
+        // Notificaciones SGC en tiempo real
+        Route::get('/notificaciones', [\Modules\SGC\Http\Controllers\NotificacionController::class, 'index'])->name('notificaciones.index');
+        Route::post('/notificaciones/{id}/leer', [\Modules\SGC\Http\Controllers\NotificacionController::class, 'marcarLeida'])->name('notificaciones.leer');
+        Route::post('/notificaciones/leer-todas', [\Modules\SGC\Http\Controllers\NotificacionController::class, 'marcarTodasLeidas'])->name('notificaciones.leer-todas');
 
     });
 

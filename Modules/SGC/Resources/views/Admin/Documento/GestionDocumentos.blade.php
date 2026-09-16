@@ -264,7 +264,7 @@
                 Mostrando {{ $documentos->firstItem() ?? 0 }}-{{ $documentos->lastItem() ?? 0 }} de {{ $documentos->total() }} documentos registrados
             </div>
             <div>
-                {{ $documentos->links('pagination::bootstrap-5') }}
+                {{ $documentos->links('sgc::layouts.partials.pagination') }}
             </div>
         </div>
     </div>

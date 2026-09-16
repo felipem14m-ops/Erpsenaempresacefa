@@ -71,6 +71,23 @@
                         </a>
                     </li>
 
+                    <!-- 2.2. Solicitudes SGC -->
+                    @php
+                        $isSolicitudesAdminActive = request()->routeIs('sgc.solicitudes.*') || request()->routeIs('sgc.admin.solicitudes.*') || request()->routeIs('sgc.resp_calidad.solicitudes.*');
+                        $adminPendingSolicitudes = \Modules\SGC\Models\Solicitud::whereIn('estado', ['radicada', 'en_revision'])->count();
+                    @endphp
+                    <li class="nav-item">
+                        <a href="{{ route('sgc.solicitudes.index') }}" class="nav-link d-flex align-items-center justify-content-between gap-2 {{ $isSolicitudesAdminActive ? 'active' : '' }}" title="Solicitudes">
+                            <div class="d-flex align-items-center gap-3 overflow-hidden">
+                                <i class="nav-icon fas fa-file-circle-check"></i>
+                                <p class="mb-0 text-truncate">Solicitudes</p>
+                            </div>
+                            @if($adminPendingSolicitudes > 0)
+                                <span class="badge rounded-pill bg-warning text-dark px-2 py-0.5" style="font-size: 10px;">{{ $adminPendingSolicitudes }}</span>
+                            @endif
+                        </a>
+                    </li>
+
                     <!-- 3. Documentos -->
                     @php
                         $isDocsAdminActive = request()->routeIs('sgc.documentos.*');
@@ -101,8 +118,11 @@
                     </li>
 
                     <!-- 6. Trazabilidad -->
+                    @php
+                        $isTrazabilidadActive = request()->routeIs('sgc.trazabilidad.*') || request()->routeIs('sgc.admin.trazabilidad.*');
+                    @endphp
                     <li class="nav-item">
-                        <a href="javascript:void(0)" class="nav-link d-flex align-items-center gap-3" title="Trazabilidad">
+                        <a href="{{ route('sgc.trazabilidad.index') }}" class="nav-link d-flex align-items-center gap-3 {{ $isTrazabilidadActive ? 'active' : '' }}" title="Trazabilidad">
                             <i class="nav-icon fas fa-chart-line"></i>
                             <p class="mb-0 text-truncate">Trazabilidad</p>
                         </a>

@@ -9,11 +9,20 @@ use Illuminate\Support\Facades\Auth;
 class SGCController extends Controller
 {
     /**
-     * Muestra la vista de bienvenida (Landing page) del SGC.
+     * Muestra la vista de bienvenida (Landing page) del SGC con el Listado Maestro oficial.
      */
     public function index()
     {
-        return view('sgc::welcome');
+        $documentosVigentes = \Modules\SGC\Models\Documento::with(['proceso', 'area', 'tipoDoc', 'versionActual'])
+            ->where('estado', 'vigente')
+            ->orderBy('codigo', 'asc')
+            ->get();
+
+        $procesos = \Modules\SGC\Models\Proceso::where('activo', 1)
+            ->orderBy('nombre', 'asc')
+            ->get();
+
+        return view('sgc::welcome', compact('documentosVigentes', 'procesos'));
     }
 
     /**

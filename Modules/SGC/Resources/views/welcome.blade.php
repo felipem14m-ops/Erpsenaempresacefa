@@ -1054,16 +1054,22 @@
                         <div class="col-lg-3 col-md-5">
                             <select id="filterProcessSelect" class="form-select filter-select" onchange="filterDocsTable()">
                                 <option value="TODOS">Todos los procesos</option>
-                                <option value="Gestión Estratégica">Gestión Estratégica</option>
-                                <option value="Evaluación y Control">Evaluación y Control</option>
-                                <option value="Gestión Documental">Gestión Documental</option>
-                                <option value="Mejora Continua">Mejora Continua</option>
+                                @if(isset($procesos) && $procesos->count() > 0)
+                                    @foreach($procesos as $proc)
+                                        <option value="{{ $proc->nombre }}">{{ $proc->nombre }}</option>
+                                    @endforeach
+                                @else
+                                    <option value="Gestión Estratégica">Gestión Estratégica</option>
+                                    <option value="Evaluación y Control">Evaluación y Control</option>
+                                    <option value="Gestión Documental">Gestión Documental</option>
+                                    <option value="Mejora Continua">Mejora Continua</option>
+                                @endif
                             </select>
                         </div>
                         <div class="col-lg-2 col-md-4">
                             <select id="filterStateSelect" class="form-select filter-select" onchange="filterDocsTable()">
-                                <option value="TODOS">Estado</option>
-                                <option value="Vigente">Vigente</option>
+                                <option value="TODOS">Estado: Todos</option>
+                                <option value="Vigente" selected>Vigente</option>
                                 <option value="En Revisión">En Revisión</option>
                                 <option value="Borrador">Borrador</option>
                             </select>
@@ -1091,96 +1097,54 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Document 1 -->
-                                <tr class="doc-row-item" data-code="SGC-DOC-001" data-name="Manual de Calidad" data-process="Gestión Estratégica" data-state="Vigente">
-                                    <td><span class="doc-code-highlight">SGC-DOC-001</span></td>
-                                    <td><strong class="text-dark">Manual de Calidad</strong></td>
-                                    <td>Gestión Estratégica</td>
-                                    <td>v3.2</td>
-                                    <td><span class="status-chip status-chip-vigente">VIGENTE</span></td>
-                                    <td>2026-08-15</td>
-                                    <td class="text-end">
-                                        <div class="d-inline-flex gap-2">
-                                            <button class="btn-action-icon" onclick="openDocPreview('SGC-DOC-001', 'Manual de Calidad', 'Gestión Estratégica', 'v3.2', 'Vigente')" title="Ver detalles"><i class="far fa-eye"></i></button>
-                                            <button class="btn-action-icon" onclick="alert('Descargando SGC-DOC-001: Manual de Calidad')" title="Descargar documento"><i class="fas fa-download text-success"></i></button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <!-- Document 2 -->
-                                <tr class="doc-row-item" data-code="SGC-DOC-015" data-name="Procedimiento de Auditorías" data-process="Evaluación y Control" data-state="Vigente">
-                                    <td><span class="doc-code-highlight">SGC-DOC-015</span></td>
-                                    <td><strong class="text-dark">Procedimiento de Auditorías</strong></td>
-                                    <td>Evaluación y Control</td>
-                                    <td>v2.1</td>
-                                    <td><span class="status-chip status-chip-vigente">VIGENTE</span></td>
-                                    <td>2026-07-20</td>
-                                    <td class="text-end">
-                                        <div class="d-inline-flex gap-2">
-                                            <button class="btn-action-icon" onclick="openDocPreview('SGC-DOC-015', 'Procedimiento de Auditorías', 'Evaluación y Control', 'v2.1', 'Vigente')" title="Ver detalles"><i class="far fa-eye"></i></button>
-                                            <button class="btn-action-icon" onclick="alert('Descargando SGC-DOC-015: Procedimiento de Auditorías')" title="Descargar documento"><i class="fas fa-download text-success"></i></button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <!-- Document 3 -->
-                                <tr class="doc-row-item" data-code="SGC-DOC-042" data-name="Formato de Solicitud de Cambio" data-process="Gestión Documental" data-state="En Revisión">
-                                    <td><span class="doc-code-highlight">SGC-DOC-042</span></td>
-                                    <td><strong class="text-dark">Formato de Solicitud de Cambio</strong></td>
-                                    <td>Gestión Documental</td>
-                                    <td>v1.5</td>
-                                    <td><span class="status-chip status-chip-revision">EN REVISIÓN</span></td>
-                                    <td>2026-09-01</td>
-                                    <td class="text-end">
-                                        <div class="d-inline-flex gap-2">
-                                            <button class="btn-action-icon" onclick="openDocPreview('SGC-DOC-042', 'Formato de Solicitud de Cambio', 'Gestión Documental', 'v1.5', 'En Revisión')" title="Ver detalles"><i class="far fa-eye"></i></button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <!-- Document 4 -->
-                                <tr class="doc-row-item" data-code="SGC-DOC-078" data-name="Instructivo de Archivo Físico" data-process="Gestión Documental" data-state="Vigente">
-                                    <td><span class="doc-code-highlight">SGC-DOC-078</span></td>
-                                    <td><strong class="text-dark">Instructivo de Archivo Físico</strong></td>
-                                    <td>Gestión Documental</td>
-                                    <td>v4.0</td>
-                                    <td><span class="status-chip status-chip-vigente">VIGENTE</span></td>
-                                    <td>2026-06-10</td>
-                                    <td class="text-end">
-                                        <div class="d-inline-flex gap-2">
-                                            <button class="btn-action-icon" onclick="openDocPreview('SGC-DOC-078', 'Instructivo de Archivo Físico', 'Gestión Documental', 'v4.0', 'Vigente')" title="Ver detalles"><i class="far fa-eye"></i></button>
-                                            <button class="btn-action-icon" onclick="alert('Descargando SGC-DOC-078: Instructivo de Archivo Físico')" title="Descargar documento"><i class="fas fa-download text-success"></i></button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <!-- Document 5 -->
-                                <tr class="doc-row-item" data-code="SGC-DOC-103" data-name="Plan de Mejoramiento Sede" data-process="Mejora Continua" data-state="Borrador">
-                                    <td><span class="doc-code-highlight">SGC-DOC-103</span></td>
-                                    <td><strong class="text-dark">Plan de Mejoramiento Sede</strong></td>
-                                    <td>Mejora Continua</td>
-                                    <td>v1.0</td>
-                                    <td><span class="status-chip status-chip-borrador">BORRADOR</span></td>
-                                    <td>2026-09-10</td>
-                                    <td class="text-end">
-                                        <div class="d-inline-flex gap-2">
-                                            <button class="btn-action-icon" onclick="openDocPreview('SGC-DOC-103', 'Plan de Mejoramiento Sede', 'Mejora Continua', 'v1.0', 'Borrador')" title="Ver detalles"><i class="far fa-eye"></i></button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                @if(isset($documentosVigentes) && $documentosVigentes->count() > 0)
+                                    @foreach($documentosVigentes as $doc)
+                                        @php
+                                            $verNum = $doc->versionActual->numero_version ?? '1.0';
+                                            $procNombre = $doc->proceso->nombre ?? 'General';
+                                            $docFecha = $doc->fecha_publicacion ? $doc->fecha_publicacion->format('Y-m-d') : ($doc->fecha_elaboracion ? $doc->fecha_elaboracion->format('Y-m-d') : date('Y-m-d'));
+                                            $estadoUpper = strtoupper($doc->estado);
+                                        @endphp
+                                        <tr class="doc-row-item" data-code="{{ $doc->codigo }}" data-name="{{ $doc->nombre }}" data-process="{{ $procNombre }}" data-state="{{ ucfirst($doc->estado) }}">
+                                            <td><span class="doc-code-highlight">{{ $doc->codigo }}</span></td>
+                                            <td><strong class="text-dark">{{ $doc->nombre }}</strong></td>
+                                            <td>{{ $procNombre }}</td>
+                                            <td>v{{ $verNum }}</td>
+                                            <td><span class="status-chip status-chip-vigente">{{ $estadoUpper }}</span></td>
+                                            <td>{{ $docFecha }}</td>
+                                            <td class="text-end">
+                                                <div class="d-inline-flex gap-2">
+                                                    <button class="btn-action-icon" onclick="openDocPreview('{{ $doc->codigo }}', '{{ addslashes($doc->nombre) }}', '{{ addslashes($procNombre) }}', 'v{{ $verNum }}', 'Vigente', '{{ route('sgc.documentos.download', $doc->id) }}')" title="Ver detalles"><i class="far fa-eye"></i></button>
+                                                    <a href="{{ route('sgc.documentos.download', $doc->id) }}" class="btn-action-icon d-inline-flex align-items-center justify-content-center text-decoration-none" title="Descargar documento oficial"><i class="fas fa-download text-success"></i></a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    <!-- Documentos Representativos Iniciales -->
+                                    <tr class="doc-row-item" data-code="SGC-DOC-001" data-name="Manual de Calidad" data-process="Gestión Estratégica" data-state="Vigente">
+                                        <td><span class="doc-code-highlight">SGC-DOC-001</span></td>
+                                        <td><strong class="text-dark">Manual de Calidad</strong></td>
+                                        <td>Gestión Estratégica</td>
+                                        <td>v3.2</td>
+                                        <td><span class="status-chip status-chip-vigente">VIGENTE</span></td>
+                                        <td>2026-08-15</td>
+                                        <td class="text-end">
+                                            <div class="d-inline-flex gap-2">
+                                                <button class="btn-action-icon" onclick="openDocPreview('SGC-DOC-001', 'Manual de Calidad', 'Gestión Estratégica', 'v3.2', 'Vigente')" title="Ver detalles"><i class="far fa-eye"></i></button>
+                                                <button class="btn-action-icon" onclick="alert('Descargando documento')" title="Descargar documento"><i class="fas fa-download text-success"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endif
                             </tbody>
                         </table>
                     </div>
 
                     <!-- Table Pagination and Counter Bar -->
                     <div class="d-flex flex-wrap align-items-center justify-content-between pt-4 mt-2 border-top gap-3">
-                        <span class="text-muted fs-7" id="docCountLabel">Mostrando 1-5 de 58 documentos</span>
-                        <div class="d-flex align-items-center gap-1">
-                            <span class="pagination-sena-pill active">1</span>
-                            <span class="pagination-sena-pill">2</span>
-                            <span class="pagination-sena-pill">3</span>
-                            <span class="text-muted px-1">...</span>
-                            <span class="pagination-sena-pill">12</span>
+                        <span class="text-muted fs-7" id="docCountLabel">Mostrando documentos</span>
+                        <div class="d-flex align-items-center gap-1" id="welcomeDocPagination">
                         </div>
                     </div>
 
@@ -1355,7 +1319,7 @@
                 </div>
                 <div class="modal-footer bg-white py-2">
                     <button type="button" class="btn btn-sm btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
-                    <button type="button" class="btn btn-sm btn-success text-white rounded-pill px-4" style="background-color: var(--sena-green);" onclick="alert('Iniciando descarga autorizada...')"><i class="fas fa-download me-1"></i> Descargar</button>
+                    <a id="modalPreviewDownloadBtn" href="#" class="btn btn-sm btn-success text-white rounded-pill px-4" style="background-color: var(--sena-green);"><i class="fas fa-download me-1"></i> Descargar</a>
                 </div>
             </div>
         </div>
@@ -1393,15 +1357,22 @@
                 // Fallback para navegadores antiguos
                 revealElements.forEach(el => el.classList.add('is-revealed'));
             }
+
+            // Inicializar contador
+            filterDocsTable();
         });
 
-        function filterDocsTable() {
+        let currentWelcomePage = 1;
+        const welcomePageSize = 8;
+
+        function filterDocsTable(page = 1) {
+            currentWelcomePage = page;
             const searchVal = document.getElementById('filterSearchInput').value.toLowerCase().trim();
             const processVal = document.getElementById('filterProcessSelect').value;
             const stateVal = document.getElementById('filterStateSelect').value;
             
-            const rows = document.querySelectorAll('#mainDocsTable tbody tr');
-            let visibleCount = 0;
+            const rows = Array.from(document.querySelectorAll('#mainDocsTable tbody tr'));
+            const matchingRows = [];
 
             rows.forEach(row => {
                 const code = (row.getAttribute('data-code') || '').toLowerCase();
@@ -1414,8 +1385,22 @@
                 const matchesState = stateVal === 'TODOS' || state.toLowerCase() === stateVal.toLowerCase();
 
                 if (matchesSearch && matchesProcess && matchesState) {
+                    matchingRows.push(row);
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            const totalMatches = matchingRows.length;
+            const totalPages = Math.ceil(totalMatches / welcomePageSize) || 1;
+            if (currentWelcomePage > totalPages) currentWelcomePage = totalPages;
+
+            const startIdx = (currentWelcomePage - 1) * welcomePageSize;
+            const endIdx = startIdx + welcomePageSize;
+
+            matchingRows.forEach((row, idx) => {
+                if (idx >= startIdx && idx < endIdx) {
                     row.style.display = '';
-                    visibleCount++;
                 } else {
                     row.style.display = 'none';
                 }
@@ -1423,11 +1408,49 @@
 
             const countLabel = document.getElementById('docCountLabel');
             if (countLabel) {
-                countLabel.textContent = `Mostrando ${visibleCount} de 58 documentos`;
+                const showingStart = totalMatches === 0 ? 0 : startIdx + 1;
+                const showingEnd = Math.min(endIdx, totalMatches);
+                countLabel.textContent = `Mostrando ${showingStart}-${showingEnd} de ${totalMatches} documentos`;
             }
+
+            renderWelcomePagination(totalPages, currentWelcomePage);
         }
 
-        function openDocPreview(code, name, process, version, state) {
+        function renderWelcomePagination(totalPages, currentPage) {
+            const container = document.getElementById('welcomeDocPagination');
+            if (!container) return;
+
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+
+            // Prev Button
+            if (currentPage > 1) {
+                html += `<button class="pagination-sena-pill" onclick="filterDocsTable(${currentPage - 1})" title="Anterior"><i class="fas fa-chevron-left" style="font-size: 11px;"></i></button>`;
+            }
+
+            // Page Buttons
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                    const activeClass = i === currentPage ? 'active' : '';
+                    html += `<button class="pagination-sena-pill ${activeClass}" onclick="filterDocsTable(${i})">${i}</button>`;
+                } else if (i === currentPage - 2 || i === currentPage + 2) {
+                    html += `<span class="text-muted px-1">...</span>`;
+                }
+            }
+
+            // Next Button
+            if (currentPage < totalPages) {
+                html += `<button class="pagination-sena-pill" onclick="filterDocsTable(${currentPage + 1})" title="Siguiente"><i class="fas fa-chevron-right" style="font-size: 11px;"></i></button>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function openDocPreview(code, name, process, version, state, downloadUrl) {
             document.getElementById('modalPreviewTitle').textContent = name;
             document.getElementById('modalPreviewCode').textContent = code;
             document.getElementById('modalPreviewProcess').textContent = process;
@@ -1436,6 +1459,16 @@
             const badge = document.getElementById('modalPreviewStateBadge');
             badge.textContent = state;
             badge.className = 'status-chip ' + (state === 'Vigente' ? 'status-chip-vigente' : (state === 'En Revisión' ? 'status-chip-revision' : 'status-chip-borrador'));
+
+            const downloadBtn = document.getElementById('modalPreviewDownloadBtn');
+            if (downloadBtn) {
+                if (downloadUrl) {
+                    downloadBtn.href = downloadUrl;
+                    downloadBtn.style.display = 'inline-flex';
+                } else {
+                    downloadBtn.style.display = 'none';
+                }
+            }
 
             const modal = new bootstrap.Modal(document.getElementById('modalDocPreview'));
             modal.show();

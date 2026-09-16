@@ -192,6 +192,9 @@
                     </tbody>
                 </table>
             </div>
+            <div class="border-top px-4 py-3 bg-white text-muted small">
+                Mostrando {{ count($proximosVencer) }} documentos próximos a revisión / vencimiento
+            </div>
         </div>
 
         <!-- ========================================== -->
@@ -245,6 +248,9 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+            <div class="border-top px-4 py-3 bg-white text-muted small">
+                Mostrando {{ $documentosVigentes->count() }} documentos vigentes del SGC
             </div>
         </div>
 

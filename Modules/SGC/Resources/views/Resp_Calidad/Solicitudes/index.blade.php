@@ -42,30 +42,28 @@
         </div>
     @endif
 
-    <!-- ======= SEARCH AND FILTER BAR (MATCHING MOCKUP) ======= -->
-    <div class="card border rounded-4 bg-white shadow-xs p-3 mb-4">
+    <!-- ======= SEARCH AND FILTER BAR ======= -->
+    <div class="card border rounded-4 bg-white shadow-sm p-3 mb-4">
         <form method="GET" action="{{ route('sgc.solicitudes.index') }}" class="row g-2 align-items-center">
             
             <!-- Search Bar -->
             <div class="col-12 col-md-8 col-lg-9">
                 <div class="input-group">
                     <span class="input-group-text bg-light border-end-0 text-muted ps-3" style="border-color: #e2e8f0;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-                        </svg>
+                        <i class="fas fa-search"></i>
                     </span>
                     <input type="text" 
                            name="search" 
                            value="{{ request('search') }}" 
                            class="form-control bg-light border-start-0 ps-2" 
-                           placeholder="Buscar solicitudes por código, solicitante o tema..." 
+                           placeholder="Buscar solicitudes por número, solicitante, justificación o tema..." 
                            style="font-size: 13.5px; border-color: #e2e8f0;">
                 </div>
             </div>
 
             <!-- State Filter Dropdown -->
             <div class="col-12 col-md-4 col-lg-3">
-                <select name="estado" class="form-select bg-white border" onchange="this.form.submit()" style="font-size: 13.5px; border-color: #e2e8f0;">
+                <select name="estado" class="form-select bg-light" onchange="this.form.submit()" style="font-size: 13.5px;">
                     <option value="all" {{ request('estado') == 'all' || !request('estado') ? 'selected' : '' }}>Filtrar por Estado: Todos</option>
                     <option value="radicada" {{ request('estado') == 'radicada' ? 'selected' : '' }}>Radicada</option>
                     <option value="en_revision" {{ request('estado') == 'en_revision' ? 'selected' : '' }}>En revisión</option>
@@ -78,7 +76,7 @@
     </div>
 
     <!-- ======= SOLICITUDES TABLE CONTAINER ======= -->
-    <div class="card border rounded-4 bg-white shadow-xs overflow-hidden mb-4">
+    <div class="card border rounded-4 bg-white shadow-sm overflow-hidden mb-4">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" style="font-size: 13.5px;">
                 <thead class="table-light">
@@ -93,84 +91,76 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($solicitudesList as $sol)
+                    @forelse($solicitudes as $sol)
                         <tr>
                             <!-- 1. Número -->
                             <td class="ps-4 py-3">
-                                <a href="{{ route('sgc.solicitudes.evaluar', $sol['id']) }}" class="fw-bold text-decoration-none font-monospace" style="color: #39A900; font-size: 13.5px;">
-                                    {{ $sol['numero'] }}
+                                <a href="{{ route('sgc.solicitudes.evaluar', $sol->id) }}" class="fw-bold text-decoration-none font-monospace" style="color: #39A900; font-size: 13.5px;">
+                                    {{ $sol->numero }}
                                 </a>
                             </td>
 
                             <!-- 2. Tipo -->
                             <td class="py-3 text-secondary text-capitalize">
-                                {{ $sol['tipo'] }}
+                                {{ $sol->tipo }}
                             </td>
 
                             <!-- 3. Solicitante -->
                             <td class="py-3 text-dark fw-medium">
-                                {{ $sol['solicitante'] }}
+                                {{ $sol->solicitante->nombre_completo ?? ($sol->solicitante->nombre_usuario ?? 'Líder de Área') }}
                             </td>
 
                             <!-- 4. Área -->
                             <td class="py-3 text-secondary">
-                                {{ $sol['area'] }}
+                                {{ $sol->area->nombre ?? ($sol->documento->area->nombre ?? 'General') }}
                             </td>
 
                             <!-- 5. Fecha Radicación -->
                             <td class="py-3 text-secondary">
-                                {{ $sol['fecha_radicacion'] }}
+                                {{ $sol->fecha_radicacion ? $sol->fecha_radicacion->translatedFormat('d-M-Y') : ($sol->creado_en ? $sol->creado_en->translatedFormat('d-M-Y') : 'Hoy') }}
                             </td>
 
                             <!-- 6. Estado -->
                             <td class="py-3">
-                                @if($sol['estado'] === 'radicada')
-                                    <span class="badge rounded-pill px-2.5 py-1 fw-semibold" style="background-color: #fef3c7; color: #d97706; font-size: 11.5px;">
+                                @if($sol->estado === 'radicada')
+                                    <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #fef3c7; color: #b45309; font-size: 11.5px;">
                                         Radicada
                                     </span>
-                                @elseif($sol['estado'] === 'en_revision')
-                                    <span class="badge rounded-pill px-2.5 py-1 fw-semibold" style="background-color: #e0f2fe; color: #0284c7; font-size: 11.5px;">
+                                @elseif($sol->estado === 'en_revision')
+                                    <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #ebf5ff; color: #1d4ed8; font-size: 11.5px;">
                                         En revisión
                                     </span>
-                                @elseif($sol['estado'] === 'aprobada')
-                                    <span class="badge rounded-pill px-2.5 py-1 fw-semibold" style="background-color: #eaf8ea; color: #007832; font-size: 11.5px;">
+                                @elseif($sol->estado === 'aprobada')
+                                    <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #eaf8ea; color: #2b8000; font-size: 11.5px;">
                                         Aprobada
                                     </span>
-                                @elseif(in_array($sol['estado'], ['rechazada', 'devuelta', 'cancelada']))
-                                    <span class="badge rounded-pill px-2.5 py-1 fw-semibold" style="background-color: #fee2e2; color: #dc2626; font-size: 11.5px;">
+                                @elseif(in_array($sol->estado, ['rechazada', 'devuelta', 'cancelada']))
+                                    <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #ffebee; color: #dc2626; font-size: 11.5px;">
                                         Rechazada
                                     </span>
                                 @else
-                                    <span class="badge rounded-pill px-2.5 py-1 bg-light text-secondary border fw-semibold">
-                                        {{ ucfirst($sol['estado']) }}
+                                    <span class="badge rounded-2 px-2 py-1 bg-light text-secondary border fw-semibold" style="font-size: 11.5px;">
+                                        {{ ucfirst($sol->estado) }}
                                     </span>
                                 @endif
                             </td>
 
-                            <!-- 7. Acciones (Exact 3 Action Icons) -->
+                            <!-- 7. Acciones -->
                             <td class="pe-4 py-3 text-end">
-                                <div class="d-inline-flex align-items-center gap-1">
-                                    <!-- Action 1: View / Evaluate (Eye) -->
-                                    <a href="{{ route('sgc.solicitudes.evaluar', $sol['id']) }}" class="btn btn-sm btn-light border-0 text-muted p-1 d-inline-flex align-items-center justify-content-center" title="Evaluar y Revisar Solicitud" style="width: 28px; height: 28px;">
-                                        <i class="fas fa-eye" style="font-size: 14px;"></i>
-                                    </a>
-
-                                    <!-- Action 2: Quick Approve -->
-                                    <a href="{{ route('sgc.solicitudes.evaluar', $sol['id']) }}" class="btn btn-sm btn-light border-0 text-success p-1 d-inline-flex align-items-center justify-content-center" title="Aprobar Solicitud" style="width: 28px; height: 28px;">
-                                        <i class="fas fa-circle-check" style="font-size: 14px;"></i>
-                                    </a>
-
-                                    <!-- Action 3: Quick Reject -->
-                                    <a href="{{ route('sgc.solicitudes.evaluar', $sol['id']) }}" class="btn btn-sm btn-light border-0 text-danger p-1 d-inline-flex align-items-center justify-content-center" title="Rechazar con observaciones" style="width: 28px; height: 28px;">
-                                        <i class="fas fa-trash-can" style="font-size: 14px;"></i>
-                                    </a>
-                                </div>
+                                <a href="{{ route('sgc.solicitudes.evaluar', $sol->id) }}" class="btn btn-sm btn-outline-success rounded-2 px-2.5 py-1 d-inline-flex align-items-center gap-1.5" title="Evaluar y Dictaminar Solicitud">
+                                    <i class="fas fa-clipboard-check"></i>
+                                    <span>Evaluar</span>
+                                </a>
                             </td>
                         </tr>
                     @empty
                         <tr>
                             <td colspan="7" class="text-center py-5 text-muted">
-                                No se encontraron solicitudes que coincidan con los criterios.
+                                <div class="py-3">
+                                    <i class="fas fa-file-circle-xmark fs-2 d-block mb-2 text-secondary opacity-50"></i>
+                                    <h6 class="fw-bold text-dark mb-1">No se encontraron solicitudes</h6>
+                                    <p class="text-secondary small mb-0">No hay trámites documentales que coincidan con los filtros seleccionados.</p>
+                                </div>
                             </td>
                         </tr>
                     @endforelse
@@ -178,29 +168,14 @@
             </table>
         </div>
 
-        <!-- Footer / Pagination -->
+        <!-- Card Footer with Pagination -->
         <div class="card-footer bg-white border-top px-4 py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
-            <small class="text-muted" style="font-size: 12.5px;">
-                Mostrando 1-{{ count($solicitudesList) }} de {{ $totalCount ?? 24 }} solicitudes documentales
-            </small>
-
-            <!-- Custom Pagination to match image -->
-            <nav aria-label="Navegación de solicitudes">
-                <ul class="pagination pagination-sm mb-0 gap-1">
-                    <li class="page-item disabled">
-                        <span class="page-link rounded-2 border text-muted px-2.5 py-1">Anterior</span>
-                    </li>
-                    <li class="page-item active">
-                        <span class="page-link rounded-2 px-2.5 py-1 fw-bold text-white" style="background-color: #39A900; border-color: #39A900;">1</span>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link rounded-2 border text-dark px-2.5 py-1" href="#">2</a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link rounded-2 border text-dark px-2.5 py-1" href="#">Siguiente</a>
-                    </li>
-                </ul>
-            </nav>
+            <div class="text-muted small">
+                Mostrando {{ $solicitudes->firstItem() ?? 0 }}-{{ $solicitudes->lastItem() ?? 0 }} de {{ $solicitudes->total() }} solicitudes documentales
+            </div>
+            <div>
+                {{ $solicitudes->links('sgc::layouts.partials.pagination') }}
+            </div>
         </div>
     </div>
 

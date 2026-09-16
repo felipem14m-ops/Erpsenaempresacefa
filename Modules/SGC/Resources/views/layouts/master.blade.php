@@ -313,6 +313,73 @@
         .sidebar::-webkit-scrollbar-track {
             background: transparent;
         }
+
+        /* ======= ESTILIZACIÓN GLOBAL DE PAGINADORES SGC (VERDE SENA) ======= */
+        .pagination, .custom-pagination {
+            margin-bottom: 0 !important;
+            gap: 4px !important;
+            display: flex !important;
+            align-items: center !important;
+            list-style: none !important;
+            padding-left: 0 !important;
+        }
+
+        .pagination .page-item .page-link,
+        .custom-pagination .page-item .page-link {
+            color: #475569 !important;
+            background-color: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            padding: 5px 11px !important;
+            min-width: 34px !important;
+            height: 34px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            text-decoration: none !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+        }
+
+        .pagination .page-item:first-child .page-link,
+        .pagination .page-item:last-child .page-link {
+            border-radius: 8px !important;
+        }
+
+        .pagination .page-item .page-link:hover:not(.disabled),
+        .custom-pagination .page-item .page-link:hover:not(.disabled) {
+            background-color: #eaf8ea !important;
+            border-color: #39A900 !important;
+            color: #007832 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(57, 169, 0, 0.18) !important;
+        }
+
+        .pagination .page-item.active .page-link,
+        .custom-pagination .page-item.active .page-link {
+            background: linear-gradient(135deg, #39A900 0%, #2e8b00 100%) !important;
+            border-color: #39A900 !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            box-shadow: 0 3px 8px rgba(57, 169, 0, 0.35) !important;
+        }
+
+        .pagination .page-item.disabled .page-link,
+        .custom-pagination .page-item.disabled .page-link {
+            background-color: #f8fafc !important;
+            border-color: #e2e8f0 !important;
+            color: #cbd5e1 !important;
+            cursor: not-allowed !important;
+            box-shadow: none !important;
+            opacity: 0.7;
+        }
+
+        /* Ocultar textos en inglés duplicados generados por paginadores predeterminados */
+        nav .d-none.flex-sm-fill.d-sm-flex.align-items-sm-center.justify-content-sm-between > div:first-child {
+            display: none !important;
+        }
     </style>
     @stack('styles')
 </head>

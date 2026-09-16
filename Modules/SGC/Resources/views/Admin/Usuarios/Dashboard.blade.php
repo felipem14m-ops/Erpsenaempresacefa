@@ -141,7 +141,7 @@
             Mostrando {{ $users->firstItem() ?? 0 }}-{{ $users->lastItem() ?? 0 }} de {{ $users->total() }} usuarios registrados
         </div>
         <div>
-            {{ $users->links('pagination::bootstrap-5') }}
+            {{ $users->links('sgc::layouts.partials.pagination') }}
         </div>
     </div>
 </div>

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Modules\SGC\Http\Requests\Usuario\StoreUsuarioRequest;
 use Modules\SGC\Http\Requests\Usuario\UpdateUsuarioRequest;
+use Modules\SGC\Models\Bitacora;
 
 class UsuarioController extends Controller
 {
@@ -54,7 +55,18 @@ class UsuarioController extends Controller
         $data['activo'] = $request->boolean('activo', true);
         unset($data['password']);
 
-        User::create($data);
+        $user = User::create($data);
+
+        Bitacora::registrar(
+            'Creación',
+            "Registró nuevo usuario '{$user->full_name}' en el sistema.",
+            'usuarios',
+            $user->id,
+            null,
+            ['nombre' => $user->full_name, 'correo' => $user->correo, 'rol_id' => $user->rol_id],
+            'exitoso',
+            'Usuarios'
+        );
 
         return redirect()->back()->with('success', 'Usuario registrado exitosamente en el módulo SGC.');
     }
@@ -65,6 +77,7 @@ class UsuarioController extends Controller
     public function update(UpdateUsuarioRequest $request, $id)
     {
         $user = User::findOrFail($id);
+        $prevData = ['nombre' => $user->full_name, 'correo' => $user->correo, 'rol_id' => $user->rol_id, 'activo' => $user->activo];
         $data = $request->validated();
 
         if ($request->filled('password')) {
@@ -75,6 +88,17 @@ class UsuarioController extends Controller
         $data['activo'] = $request->boolean('activo');
 
         $user->update($data);
+
+        Bitacora::registrar(
+            'Modificación',
+            "Actualizó información del usuario '{$user->full_name}'.",
+            'usuarios',
+            $user->id,
+            $prevData,
+            ['nombre' => $user->full_name, 'correo' => $user->correo, 'rol_id' => $user->rol_id, 'activo' => $user->activo],
+            'exitoso',
+            'Usuarios'
+        );
 
         return redirect()->back()->with('success', 'Usuario actualizado exitosamente.');
     }
@@ -89,6 +113,18 @@ class UsuarioController extends Controller
         $user->save();
 
         $estado = $user->activo ? 'activado' : 'desactivado';
+
+        Bitacora::registrar(
+            'Modificación',
+            "Cambió estado a {$estado} del usuario '{$user->full_name}'.",
+            'usuarios',
+            $user->id,
+            null,
+            ['activo' => $user->activo],
+            'exitoso',
+            'Usuarios'
+        );
+
         return redirect()->back()->with('success', "El usuario {$user->full_name} ha sido {$estado}.");
     }
 
@@ -101,6 +137,18 @@ class UsuarioController extends Controller
         $name = $user->full_name;
         $user->delete();
 
+        Bitacora::registrar(
+            'Eliminación',
+            "Eliminó el usuario '{$name}' del sistema.",
+            'usuarios',
+            $id,
+            null,
+            null,
+            'exitoso',
+            'Usuarios'
+        );
+
         return redirect()->back()->with('success', "Usuario '{$name}' eliminado correctamente.");
     }
 }
+

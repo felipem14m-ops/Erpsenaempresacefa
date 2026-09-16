@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Modules\SGC\Http\Requests\Permiso\PermisoSGCRequest;
 use Modules\SGC\Http\Requests\Permiso\AsignarPermisoSGCRequest;
+use Modules\SGC\Models\Bitacora;
 
 class RolesPermisosController extends Controller
 {
@@ -36,7 +37,18 @@ class RolesPermisosController extends Controller
     /** Crear un permiso nuevo, forzado a modulo=SGC */
     public function storePermiso(PermisoSGCRequest $request)
     {
-        Permiso::create($request->validated());
+        $permiso = Permiso::create($request->validated());
+
+        Bitacora::registrar(
+            'Creación',
+            "Creó nuevo permiso '{$permiso->nombre}' ({$permiso->accion}) en SGC.",
+            'permisos',
+            $permiso->id,
+            null,
+            $permiso->toArray(),
+            'exitoso',
+            'Roles y Permisos'
+        );
 
         return back()->with('success', 'Permiso de SGC creado correctamente.');
     }
@@ -45,7 +57,19 @@ class RolesPermisosController extends Controller
     public function updatePermiso(PermisoSGCRequest $request, int $permisoId)
     {
         $permiso = Permiso::deModulo(self::MODULO)->findOrFail($permisoId);
+        $prev = $permiso->toArray();
         $permiso->update($request->validated());
+
+        Bitacora::registrar(
+            'Modificación',
+            "Actualizó el permiso '{$permiso->nombre}'.",
+            'permisos',
+            $permiso->id,
+            $prev,
+            $permiso->toArray(),
+            'exitoso',
+            'Roles y Permisos'
+        );
 
         return back()->with('success', 'Permiso actualizado.');
     }
@@ -54,10 +78,22 @@ class RolesPermisosController extends Controller
     public function destroyPermiso(int $permisoId)
     {
         $permiso = Permiso::deModulo(self::MODULO)->findOrFail($permisoId);
+        $nombre = $permiso->nombre;
 
         // Evita romper rol_permisos existentes sin querer
         DB::table('rol_permisos')->where('permiso_id', $permiso->id)->delete();
         $permiso->delete();
+
+        Bitacora::registrar(
+            'Eliminación',
+            "Eliminó el permiso '{$nombre}' del SGC.",
+            'permisos',
+            $permisoId,
+            null,
+            null,
+            'exitoso',
+            'Roles y Permisos'
+        );
 
         return back()->with('success', 'Permiso eliminado.');
     }
@@ -70,11 +106,23 @@ class RolesPermisosController extends Controller
     public function asignar(AsignarPermisoSGCRequest $request)
     {
         $permiso = Permiso::deModulo(self::MODULO)->findOrFail($request->permiso_id);
+        $rol = Rol::find($request->rol_id);
 
         DB::table('rol_permisos')->updateOrInsert([
             'rol_id' => $request->rol_id,
             'permiso_id' => $permiso->id,
         ]);
+
+        Bitacora::registrar(
+            'Modificación',
+            "Asignó el permiso '{$permiso->nombre}' al rol '{$rol->nombre}'.",
+            'rol_permisos',
+            $request->rol_id,
+            null,
+            ['rol_id' => $request->rol_id, 'permiso_id' => $permiso->id],
+            'exitoso',
+            'Roles y Permisos'
+        );
 
         return back()->with('success', 'Permiso asignado al rol.');
     }
@@ -83,11 +131,23 @@ class RolesPermisosController extends Controller
     public function quitar(AsignarPermisoSGCRequest $request)
     {
         $permiso = Permiso::deModulo(self::MODULO)->findOrFail($request->permiso_id);
+        $rol = Rol::find($request->rol_id);
 
         DB::table('rol_permisos')
             ->where('rol_id', $request->rol_id)
             ->where('permiso_id', $permiso->id)
             ->delete();
+
+        Bitacora::registrar(
+            'Modificación',
+            "Retiró el permiso '{$permiso->nombre}' del rol '{$rol->nombre}'.",
+            'rol_permisos',
+            $request->rol_id,
+            null,
+            null,
+            'exitoso',
+            'Roles y Permisos'
+        );
 
         return back()->with('success', 'Permiso retirado del rol.');
     }
@@ -98,7 +158,7 @@ class RolesPermisosController extends Controller
         $usuarios = User::with('rol')
             ->whereHas('rol.permisos', fn($q) => $q->where('modulo', self::MODULO))
             ->orderBy('nombre_completo')
-            ->get();
+            ->paginate(10);
 
         return view('sgc::Admin.Roles-Permisos.usuarios', compact('usuarios'));
     }
