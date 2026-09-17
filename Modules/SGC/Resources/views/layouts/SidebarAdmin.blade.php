@@ -50,74 +50,114 @@
                     </li>
 
                     <!-- 2. Gestión de Usuarios -->
-                    @php
-                        $isUsuariosActive = request()->routeIs('sgc.usuarios.*') || request()->routeIs('sgc.users.*');
-                    @endphp
-                    <li class="nav-item">
-                        <a href="{{ route('sgc.usuarios.index') }}" class="nav-link d-flex align-items-center gap-3 {{ $isUsuariosActive ? 'active' : '' }}" title="Usuarios">
-                            <i class="nav-icon fas fa-users-gear"></i>
-                            <p class="mb-0 text-truncate">Usuarios</p>
-                        </a>
-                    </li>
+                    @if(auth()->check() && (auth()->user()->hasSuperAdmin() || auth()->user()->tieneAccesoModulo('SGC', 'gestionar_usuarios')))
+                        @php
+                            $isUsuariosActive = request()->routeIs('sgc.usuarios.*') || request()->routeIs('sgc.users.*');
+                        @endphp
+                        <li class="nav-item">
+                            <a href="{{ route('sgc.usuarios.index') }}" class="nav-link d-flex align-items-center gap-3 {{ $isUsuariosActive ? 'active' : '' }}" title="Usuarios">
+                                <i class="nav-icon fas fa-users-gear"></i>
+                                <p class="mb-0 text-truncate">Usuarios</p>
+                            </a>
+                        </li>
+                    @endif
 
                     <!-- 2.1. Roles y Permisos SGC -->
-                    @php
-                        $isRolesActive = request()->routeIs('sgc.roles-permisos.*');
-                    @endphp
-                    <li class="nav-item">
-                        <a href="{{ route('sgc.roles-permisos.index') }}" class="nav-link d-flex align-items-center gap-3 {{ $isRolesActive ? 'active' : '' }}" title="Roles y Permisos">
-                            <i class="nav-icon fas fa-shield-halved"></i>
-                            <p class="mb-0 text-truncate">Roles y Permisos</p>
-                        </a>
-                    </li>
+                    @if(auth()->check() && (auth()->user()->hasSuperAdmin() || auth()->user()->tieneAccesoModulo('SGC', 'gestionar_roles_permisos')))
+                        @php
+                            $isRolesActive = request()->routeIs('sgc.roles-permisos.*');
+                        @endphp
+                        <li class="nav-item">
+                            <a href="{{ route('sgc.roles-permisos.index') }}" class="nav-link d-flex align-items-center gap-3 {{ $isRolesActive ? 'active' : '' }}" title="Roles y Permisos">
+                                <i class="nav-icon fas fa-shield-halved"></i>
+                                <p class="mb-0 text-truncate">Roles y Permisos</p>
+                            </a>
+                        </li>
+                    @endif
+
+                    <!-- 2.2. Solicitudes SGC -->
+                    @if(auth()->check() && (auth()->user()->hasSuperAdmin() || auth()->user()->tieneAccesoModulo('SGC', 'consultar_solicitud|crear_solicitud|aprobar_solicitud|rechazar_solicitud')))
+                        @php
+                            $isSolicitudesAdminActive = request()->routeIs('sgc.solicitudes.*') || request()->routeIs('sgc.admin.solicitudes.*');
+                            $adminPendingSolicitudes = \Modules\SGC\Models\Solicitud::where('solicitado_por', auth()->id())->whereIn('estado', ['radicada', 'en_revision'])->count();
+                        @endphp
+                        <li class="nav-item">
+                            <a href="{{ route('sgc.admin.solicitudes.index') }}" class="nav-link d-flex align-items-center justify-content-between gap-2 {{ $isSolicitudesAdminActive ? 'active' : '' }}" title="Solicitudes">
+                                <div class="d-flex align-items-center gap-3 overflow-hidden">
+                                    <i class="nav-icon fas fa-file-circle-check"></i>
+                                    <p class="mb-0 text-truncate">Solicitudes</p>
+                                </div>
+                                @if($adminPendingSolicitudes > 0)
+                                    <span class="badge rounded-pill bg-warning text-dark px-2 py-0.5" style="font-size: 10px;">{{ $adminPendingSolicitudes }}</span>
+                                @endif
+                            </a>
+                        </li>
+                    @endif
 
                     <!-- 3. Documentos -->
-                    @php
-                        $isDocsAdminActive = request()->routeIs('sgc.documentos.*');
-                    @endphp
-                    <li class="nav-item">
-                        <a href="{{ route('sgc.documentos.index') }}" class="nav-link d-flex align-items-center gap-3 {{ $isDocsAdminActive ? 'active' : '' }}" title="Documentos">
-                            <i class="nav-icon fas fa-file-lines"></i>
-                            <p class="mb-0 text-truncate">Documentos</p>
-                        </a>
-                    </li>
+                    @if(auth()->check() && (auth()->user()->hasSuperAdmin() || auth()->user()->tieneAccesoModulo('SGC', 'consultar_documento')))
+                        @php
+                            $isDocsAdminActive = request()->routeIs('sgc.documentos.*');
+                        @endphp
+                        <li class="nav-item">
+                            <a href="{{ route('sgc.documentos.index') }}" class="nav-link d-flex align-items-center gap-3 {{ $isDocsAdminActive ? 'active' : '' }}" title="Documentos">
+                                <i class="nav-icon fas fa-file-lines"></i>
+                                <p class="mb-0 text-truncate">Documentos</p>
+                            </a>
+                        </li>
+                    @endif
 
                     <!-- 3.1. Catálogos Maestros (Procesos, Áreas, Tipos) -->
-                    @php
-                        $isCatalogosAdminActive = request()->routeIs('sgc.catalogos.*') || request()->routeIs('sgc.procesos.*') || request()->routeIs('sgc.areas.*') || request()->routeIs('sgc.tipos-documento.*');
-                    @endphp
-                    <li class="nav-item">
-                        <a href="{{ route('sgc.catalogos.index') }}" class="nav-link d-flex align-items-center gap-3 {{ $isCatalogosAdminActive ? 'active' : '' }}" title="Catálogos SGC">
-                            <i class="nav-icon fas fa-folder-tree"></i>
-                            <p class="mb-0 text-truncate">Catálogos SGC</p>
-                        </a>
-                    </li>
+                    @if(auth()->check() && (auth()->user()->hasSuperAdmin() || auth()->user()->tieneAccesoModulo('SGC', 'gestionar_catalogos')))
+                        @php
+                            $isCatalogosAdminActive = request()->routeIs('sgc.catalogos.*') || request()->routeIs('sgc.procesos.*') || request()->routeIs('sgc.areas.*') || request()->routeIs('sgc.tipos-documento.*');
+                        @endphp
+                        <li class="nav-item">
+                            <a href="{{ route('sgc.catalogos.index') }}" class="nav-link d-flex align-items-center gap-3 {{ $isCatalogosAdminActive ? 'active' : '' }}" title="Catálogos SGC">
+                                <i class="nav-icon fas fa-folder-tree"></i>
+                                <p class="mb-0 text-truncate">Catálogos SGC</p>
+                            </a>
+                        </li>
+                    @endif
+
                     <!-- 5. Versiones -->
-                    <li class="nav-item">
-                        <a href="javascript:void(0)" class="nav-link d-flex align-items-center gap-3" title="Versiones">
-                            <i class="nav-icon fas fa-code-fork"></i>
-                            <p class="mb-0 text-truncate">Versiones</p>
-                        </a>
-                    </li>
+                    @if(auth()->check() && (auth()->user()->hasSuperAdmin() || auth()->user()->tieneAccesoModulo('SGC', 'gestionar_versiones')))
+                        @php
+                            $isVersionesActive = request()->routeIs('sgc.versiones.*') || request()->routeIs('sgc.admin.versiones.*');
+                        @endphp
+                        <li class="nav-item">
+                            <a href="{{ route('sgc.versiones.index') }}" class="nav-link d-flex align-items-center gap-3 {{ $isVersionesActive ? 'active' : '' }}" title="Versiones">
+                                <i class="nav-icon fas fa-code-fork"></i>
+                                <p class="mb-0 text-truncate">Versiones</p>
+                            </a>
+                        </li>
+                    @endif
 
                     <!-- 6. Trazabilidad -->
-                    <li class="nav-item">
-                        <a href="javascript:void(0)" class="nav-link d-flex align-items-center gap-3" title="Trazabilidad">
-                            <i class="nav-icon fas fa-chart-line"></i>
-                            <p class="mb-0 text-truncate">Trazabilidad</p>
-                        </a>
-                    </li>
+                    @if(auth()->check() && (auth()->user()->hasSuperAdmin() || auth()->user()->tieneAccesoModulo('SGC', 'ver_trazabilidad')))
+                        @php
+                            $isTrazabilidadActive = request()->routeIs('sgc.trazabilidad.*') || request()->routeIs('sgc.admin.trazabilidad.*');
+                        @endphp
+                        <li class="nav-item">
+                            <a href="{{ route('sgc.trazabilidad.index') }}" class="nav-link d-flex align-items-center gap-3 {{ $isTrazabilidadActive ? 'active' : '' }}" title="Trazabilidad">
+                                <i class="nav-icon fas fa-chart-line"></i>
+                                <p class="mb-0 text-truncate">Trazabilidad</p>
+                            </a>
+                        </li>
+                    @endif
 
                     <!-- 7. Reportes -->
-                    @php
-                        $isReportesActive = request()->routeIs('sgc.reportes.*') || request()->routeIs('sgc.admin.reportes.*');
-                    @endphp
-                    <li class="nav-item">
-                        <a href="{{ route('sgc.reportes.index') }}" class="nav-link d-flex align-items-center gap-3 {{ $isReportesActive ? 'active' : '' }}" title="Reportes">
-                            <i class="nav-icon fas fa-clock-rotate-left"></i>
-                            <p class="mb-0 text-truncate">Reportes</p>
-                        </a>
-                    </li>
+                    @if(auth()->check() && (auth()->user()->hasSuperAdmin() || auth()->user()->tieneAccesoModulo('SGC', 'ver_reportes')))
+                        @php
+                            $isReportesActive = request()->routeIs('sgc.reportes.*') || request()->routeIs('sgc.admin.reportes.*');
+                        @endphp
+                        <li class="nav-item">
+                            <a href="{{ route('sgc.reportes.index') }}" class="nav-link d-flex align-items-center gap-3 {{ $isReportesActive ? 'active' : '' }}" title="Reportes">
+                                <i class="nav-icon fas fa-clock-rotate-left"></i>
+                                <p class="mb-0 text-truncate">Reportes</p>
+                            </a>
+                        </li>
+                    @endif
 
                 </ul>
             </nav>

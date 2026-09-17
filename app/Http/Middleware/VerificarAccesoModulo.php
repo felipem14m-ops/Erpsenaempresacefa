@@ -53,15 +53,32 @@ class VerificarAccesoModulo
                 ]
             );
 
-            // 4. Denegar acceso con 403 Forbidden
-            if ($request->wantsJson()) {
+            // 4. Denegar acceso para peticiones AJAX o JSON
+            if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Acceso denegado: No cuentas con permisos para acceder al módulo {$modulo}{$detalleAccion}.",
+                    'message' => "Acceso denegado: Tu rol ({$rolNombre}) no cuenta con los permisos necesarios para realizar esta acción en el módulo {$modulo}.",
                 ], Response::HTTP_FORBIDDEN);
             }
 
-            abort(Response::HTTP_FORBIDDEN, "Acceso restringido: Tu rol ({$rolNombre}) no cuenta con permisos autorizados para el módulo {$modulo}.");
+            // 5. Redirección amigable con alerta de bloqueo para peticiones Web
+            $mensajeError = "Acceso Denegado: Tu rol ({$rolNombre}) no cuenta con los permisos necesarios para acceder a esta sección del {$modulo}.";
+
+            // Si el usuario tiene acceso básico al módulo pero no a la acción específica, redirigir al Dashboard del módulo
+            if ($usuario->tieneAccesoModulo($modulo)) {
+                $dashboardRoute = match (strtoupper($modulo)) {
+                    'SGC' => 'sgc.dashboard',
+                    'SST' => 'sst.dashboard',
+                    default => 'welcome'
+                };
+
+                if (\Illuminate\Support\Facades\Route::has($dashboardRoute) && !$request->routeIs($dashboardRoute)) {
+                    return redirect()->route($dashboardRoute)->with('error', $mensajeError);
+                }
+            }
+
+            // Si no tiene acceso al módulo o ya está en el dashboard, redirigir al inicio general
+            return redirect()->route('welcome')->with('error', $mensajeError);
         }
 
         return $next($request);

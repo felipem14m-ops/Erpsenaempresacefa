@@ -11,9 +11,8 @@ class RolesSeeder extends Seeder
     {
         DB::table('roles')->insert([
             ['nombre' => 'Administrador', 'slug' => 'admin', 'descripcion' => 'Acceso total al sistema', 'creado_en' => now()],
-            ['nombre' => 'Responsable de Calidad', 'slug' => 'resp_calidad', 'descripcion' => 'Aprueba o rechaza solicitudes documentales', 'creado_en' => now()],
-            ['nombre' => 'Líder de Área', 'slug' => 'lider_area', 'descripcion' => 'Radica solicitudes documentales de su área', 'creado_en' => now()],
-            ['nombre' => 'Aprendiz/Instructor Consultante', 'slug' => 'consultante', 'descripcion' => 'Consulta documentos vigentes vía enlace directo', 'creado_en' => now()],
+            ['nombre' => 'Responsable de Calidad', 'slug' => 'resp_calidad', 'descripcion' => 'Aprueba o rechaza solicitudes documentales y gestiona versiones', 'creado_en' => now()],
+            ['nombre' => 'Líder de Área', 'slug' => 'lider_area', 'descripcion' => 'Radica solicitudes documentales de su área y consulta formatos', 'creado_en' => now()],
         ]);
     }
 }

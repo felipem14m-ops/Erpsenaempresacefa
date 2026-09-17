@@ -84,7 +84,7 @@
                                 }
                             @endphp
                             <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: {{ $badgeBg }}; color: {{ $badgeColor }}; font-size: 11.5px;">
-                                {{ $userItem->rol->nombre ?? 'Consultante' }}
+                                {{ $userItem->rol->nombre ?? 'Sin Rol' }}
                             </span>
                         </td>
                         <td class="py-3 text-center">
@@ -141,7 +141,7 @@
             Mostrando {{ $users->firstItem() ?? 0 }}-{{ $users->lastItem() ?? 0 }} de {{ $users->total() }} usuarios registrados
         </div>
         <div>
-            {{ $users->links('pagination::bootstrap-5') }}
+            {{ $users->links('sgc::layouts.partials.pagination') }}
         </div>
     </div>
 </div>

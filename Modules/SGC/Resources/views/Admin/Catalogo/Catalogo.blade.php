@@ -307,6 +307,9 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="card-footer bg-white border-top px-4 py-3 text-muted small">
+                    Mostrando {{ $procesos->count() }} procesos institucionales registrados
+                </div>
             </div>
         </div>
 
@@ -428,6 +431,9 @@
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+                <div class="card-footer bg-white border-top px-4 py-3 text-muted small">
+                    Mostrando {{ $areas->count() }} áreas y dependencias registradas
                 </div>
             </div>
         </div>
@@ -564,6 +570,9 @@
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+                <div class="card-footer bg-white border-top px-4 py-3 text-muted small">
+                    Mostrando {{ $tiposDocumento->count() }} tipos documentales (formatos) registrados
                 </div>
             </div>
         </div>

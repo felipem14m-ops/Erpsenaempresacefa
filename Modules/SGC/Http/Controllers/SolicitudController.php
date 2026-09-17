@@ -11,7 +11,10 @@ use Modules\SGC\Models\Proceso;
 use Modules\SGC\Models\Area;
 use Modules\SGC\Models\TipoDocumento;
 use Modules\SGC\Models\Documento;
+use Modules\SGC\Models\VersionDoc;
+use Modules\SGC\Models\ListadoMaestro;
 use Modules\SGC\Models\Bitacora;
+use App\Models\Notificacion;
 use Modules\SGC\Http\Requests\Solicitud\StoreSolicitudRequest;
 use Modules\SGC\Events\SolicitudRadicada;
 use Modules\SGC\Events\SolicitudRespondida;
@@ -19,24 +22,33 @@ class SolicitudController extends Controller
 {
     /**
      * Muestra la lista de solicitudes documentales.
-     * Si la petición es del Líder de Área muestra su portal de radicación,
-     * y si es del Responsable de Calidad o Admin muestra la Gestión y Aprobación Documental (según Mockup).
+     * Si la petición es del Administrador, muestra la gestión de sus solicitudes radicadas.
+     * Si la petición es del Líder de Área, muestra su portal de radicación.
+     * Si es del Responsable de Calidad, muestra la Evaluación y Dictamen Documental general.
      */
     public function index(Request $request)
     {
         $userId = auth()->id();
+        $isAdminRoute = request()->routeIs('sgc.admin.solicitudes.*') || request()->routeIs('sgc.admin.*');
+        $isAdminUser = auth()->check() && (auth()->user()->rol_id == 1 || str_contains(strtolower(auth()->user()->rol->nombre ?? ''), 'admin'));
         $isLiderRoute = request()->routeIs('sgc.lider_area.*');
         $isLiderUser = auth()->check() && (auth()->user()->rol_id == 3 || str_contains(strtolower(auth()->user()->rol->nombre ?? ''), 'lider'));
 
-        // Si es expresamente la ruta del Líder de Área:
-        if ($isLiderRoute || ($isLiderUser && !request()->routeIs('sgc.solicitudes.*'))) {
+        // Si es la ruta del Administrador o usuario con rol Administrador:
+        if ($isAdminRoute || ($isAdminUser && !request()->routeIs('sgc.resp_calidad.*'))) {
+            return $this->indexAdmin($request);
+        }
+
+        // Si es la ruta del Líder de Área o el usuario autenticado tiene rol Líder de Área:
+        if ($isLiderRoute || $isLiderUser) {
             return $this->indexLiderArea($request);
         }
 
         // ==========================================
-        // VISTA RESPONSABLE DE CALIDAD / ADMIN
+        // VISTA RESPONSABLE DE CALIDAD (EVALUACIÓN)
         // ==========================================
-        $query = Solicitud::with(['documento', 'proceso', 'area', 'tipoDoc', 'solicitante', 'asignado']);
+        $query = Solicitud::with(['documento', 'proceso', 'area', 'tipoDoc', 'solicitante', 'asignado'])
+            ->orderBy('id', 'desc');
 
         // Filtro de Búsqueda
         if ($request->filled('search')) {
@@ -60,108 +72,223 @@ class SolicitudController extends Controller
             $query->where('estado', $request->estado);
         }
 
-        $dbSolicitudes = $query->orderBy('id', 'desc')->get();
+        $solicitudes = $query->paginate(10)->withQueryString();
 
-        // Mapeo a estructura limpia para la vista
-        $solicitudesList = [];
-        foreach ($dbSolicitudes as $sol) {
-            $fechaFormatted = 'Hoy';
-            if ($sol->fecha_radicacion) {
-                $fechaFormatted = $sol->fecha_radicacion->translatedFormat('d-M-Y');
-            } elseif ($sol->creado_en) {
-                $fechaFormatted = $sol->creado_en->translatedFormat('d-M-Y');
-            }
-
-            $solicitudesList[] = [
-                'id' => $sol->id,
-                'numero' => $sol->numero,
-                'tipo' => $sol->tipo,
-                'solicitante' => $sol->solicitante->nombre_completo ?? ($sol->solicitante->nombre_usuario ?? 'Líder de Área'),
-                'area' => $sol->area->nombre ?? ($sol->documento->area->nombre ?? 'Agroindustrial'),
-                'fecha_radicacion' => $fechaFormatted,
-                'estado' => $sol->estado,
-            ];
-        }
-
-        // Si la base de datos tiene pocos registros (ej. ambiente de prueba inicial),
-        // complementamos con los registros del mockup para visualización completa.
-        if (count($solicitudesList) < 6 && !$request->filled('search') && (!$request->filled('estado') || $request->estado === 'all')) {
-            $mockups = [
-                ['id' => 42, 'numero' => 'SOL-042', 'tipo' => 'Creación', 'solicitante' => 'Ing. Amanda Ortiz', 'area' => 'Agroindustrial', 'fecha_radicacion' => '18-Ene-2024', 'estado' => 'radicada'],
-                ['id' => 41, 'numero' => 'SOL-041', 'tipo' => 'Modificación', 'solicitante' => 'Dr. Hector Gomez', 'area' => 'Pecuaria', 'fecha_radicacion' => '17-Ene-2024', 'estado' => 'en_revision'],
-                ['id' => 40, 'numero' => 'SOL-040', 'tipo' => 'Eliminación', 'solicitante' => 'Laura Beltran', 'area' => 'Administrativa', 'fecha_radicacion' => '15-Ene-2024', 'estado' => 'aprobada'],
-                ['id' => 39, 'numero' => 'SOL-039', 'tipo' => 'Creación', 'solicitante' => 'Ing. Amanda Ortiz', 'area' => 'Agroindustrial', 'fecha_radicacion' => '12-Ene-2024', 'estado' => 'en_revision'],
-                ['id' => 38, 'numero' => 'SOL-038', 'tipo' => 'Modificación', 'solicitante' => 'Roberto Diaz', 'area' => 'Tecnología', 'fecha_radicacion' => '10-Ene-2024', 'estado' => 'rechazada'],
-                ['id' => 37, 'numero' => 'SOL-037', 'tipo' => 'Creación', 'solicitante' => 'Daniel Cabrera', 'area' => 'Sistemas', 'fecha_radicacion' => '08-Ene-2024', 'estado' => 'aprobada'],
-            ];
-
-            // Reemplazar o combinar asegurando IDs
-            if (empty($solicitudesList)) {
-                $solicitudesList = $mockups;
-            }
-        }
-
-        $totalCount = max(24, count($solicitudesList));
-
-        return view('sgc::Resp_Calidad.Solicitudes.index', compact('solicitudesList', 'totalCount'));
+        return view('sgc::Resp_Calidad.Solicitudes.index', compact('solicitudes'));
     }
 
     /**
      * Muestra la vista de evaluación y dictamen de solicitud para Responsable de Calidad.
+     * Al ser consultada por primera vez, pasa automáticamente de 'radicada' a 'en_revision'
+     * y se notifica en tiempo real al Líder de Área solicitante.
      */
     public function evaluar($id)
     {
         $solicitud = Solicitud::with(['documento.versionActual', 'proceso', 'area', 'tipoDoc', 'solicitante.rol', 'asignado'])
-            ->find($id);
+            ->findOrFail($id);
 
-        if (!$solicitud) {
-            // Generar objeto temporal para demostración y evaluación con datos del mockup SOL-042
-            $solicitud = new Solicitud([
-                'id' => $id,
-                'numero' => 'SOL-042',
-                'tipo' => 'Creación',
-                'estado' => 'radicada',
-                'justificacion' => 'Se requiere la creación del documento oficial "Procedimiento para Compras y Adquisiciones" debido a la nueva directiva institucional que exige uniformidad en la contratación de proveedores y control de presupuestos del Centro de Formación La Angostura.',
-                'observaciones_resp' => null,
-                'adjunto_ruta' => null,
-                'fecha_radicacion' => now()->subDays(2),
-            ]);
-            $solicitud->id = $id;
+        // Si la solicitud está radicada y entra a evaluación, pasa automáticamente a 'en_revision'
+        if ($solicitud->estado === 'radicada') {
+            $solicitud->estado = 'en_revision';
+            $solicitud->asignado_a = auth()->id();
+            $solicitud->save();
+
+            // Notificación al Líder de Área
+            if ($solicitud->solicitado_por) {
+                Notificacion::notificarUsuario(
+                    $solicitud->solicitado_por,
+                    'solicitud_en_revision',
+                    "Solicitud en Revisión ({$solicitud->numero})",
+                    "Su solicitud {$solicitud->numero} ({$solicitud->tipo}) ha pasado a estado 'En Revisión' por el Responsable de Calidad.",
+                    'solicitudes',
+                    $solicitud->id
+                );
+            }
+
+            // Registro en Bitácora
+            $userName = auth()->user()->nombre_completo ?? auth()->user()->nombre_usuario ?? 'Responsable de Calidad';
+            Bitacora::registrar(
+                'Modificación',
+                "Solicitud N° {$solicitud->numero} pasó a estado 'En Revisión' por {$userName}.",
+                'solicitudes',
+                $solicitud->id,
+                ['estado' => 'radicada'],
+                ['estado' => 'en_revision'],
+                'exitoso',
+                'Solicitudes'
+            );
         }
 
         return view('sgc::Resp_Calidad.Solicitudes.aprobar', compact('solicitud'));
     }
 
     /**
-     * Aprueba formalmente una solicitud documental.
+     * Aprueba formalmente una solicitud documental y publica automáticamente
+     * el documento oficial en el Listado Maestro.
      */
     public function aprobar(Request $request, $id)
     {
-        $solicitud = Solicitud::find($id);
-        $numero = 'SOL-042';
+        $solicitud = Solicitud::with(['documento', 'proceso', 'area', 'tipoDoc', 'solicitante'])->findOrFail($id);
+        $userId = auth()->id();
+        $userName = auth()->user()->nombre_completo ?? auth()->user()->nombre_usuario ?? 'Responsable de Calidad';
 
-        if ($solicitud) {
-            $numero = $solicitud->numero;
+        DB::transaction(function () use ($solicitud, $request, $userId, $userName) {
+            $estadoAnterior = $solicitud->estado;
             $solicitud->estado = 'aprobada';
-            $solicitud->observaciones_resp = $request->input('observaciones');
+            $solicitud->observaciones_resp = $request->input('observaciones', 'Solicitud aprobada y validada técnicamente para su inclusión en el Listado Maestro.');
+            $solicitud->fecha_resolucion = now();
+            $solicitud->asignado_a = $userId;
             $solicitud->save();
 
-            // Registro en bitácora
-            $userName = auth()->user()->nombre_completo ?? auth()->user()->nombre_usuario ?? 'Responsable de Calidad';
+            // =========================================================================
+            // PUBLICACIÓN AUTOMÁTICA EN LISTADO MAESTRO (DOCUMENTO + VERSION)
+            // =========================================================================
+            if ($solicitud->tipo === 'Creación' || $solicitud->tipo === 'creacion') {
+                // 1. Generar código documental oficial estandarizado
+                $tipoPrefix = $solicitud->tipoDoc?->codigo ?? 'PR';
+                $areaPrefix = $solicitud->area?->codigo ?? 'AG';
+                $consecutivo = Documento::where('proceso_id', $solicitud->proceso_id)->count() + 1;
+                $codigoDoc = sprintf('%s-%s-%03d', $tipoPrefix, $areaPrefix, $consecutivo);
+
+                // Asegurar código único si ya existiera
+                while (Documento::where('codigo', $codigoDoc)->exists()) {
+                    $consecutivo++;
+                    $codigoDoc = sprintf('%s-%s-%03d', $tipoPrefix, $areaPrefix, $consecutivo);
+                }
+
+                // 2. Crear registro oficial en tabla documentos (vigente)
+                $documento = Documento::create([
+                    'codigo' => $codigoDoc,
+                    'nombre' => $solicitud->nombre_propuesto ?: "Documento Oficial {$codigoDoc}",
+                    'descripcion' => $solicitud->justificacion,
+                    'proceso_id' => $solicitud->proceso_id,
+                    'area_id' => $solicitud->area_id,
+                    'tipo_doc_id' => $solicitud->tipo_doc_id ?: 1,
+                    'responsable_id' => $solicitud->solicitado_por ?: $userId,
+                    'estado' => 'vigente',
+                    'fecha_elaboracion' => now()->toDateString(),
+                    'fecha_proxima_revision' => now()->addYear()->toDateString(),
+                    'fecha_publicacion' => now(),
+                    'creado_por' => $userId,
+                ]);
+
+                // 3. Crear primera versión oficial V1.0 en versiones_doc
+                $versionDoc = VersionDoc::create([
+                    'documento_id' => $documento->id,
+                    'numero_version' => '1.0',
+                    'descripcion_cambio' => $solicitud->justificacion ?: 'Emisión inicial del documento oficial aprobado.',
+                    'archivo_ruta' => $solicitud->adjunto_ruta ?: 'sgc/documentos/default.pdf',
+                    'archivo_nombre' => basename($solicitud->adjunto_ruta ?: 'documento.pdf'),
+                    'archivo_tamano_kb' => 125,
+                    'archivo_formato' => pathinfo($solicitud->adjunto_ruta ?? 'pdf', PATHINFO_EXTENSION) ?: 'pdf',
+                    'estado' => 'vigente',
+                    'publicado_por' => $userId,
+                    'fecha_publicacion' => now(),
+                    'creado_por' => $userId,
+                    'creado_en' => now(),
+                ]);
+
+                // 4. Registrar en el Listado Maestro oficial
+                ListadoMaestro::updateOrCreate(
+                    ['documento_id' => $documento->id],
+                    [
+                        'version_id' => $versionDoc->id,
+                        'proceso_id' => $documento->proceso_id,
+                        'publicado_por' => $userId,
+                        'fecha_pub' => now(),
+                        'activo' => true,
+                    ]
+                );
+
+                // Vincular la solicitud con el nuevo documento creado
+                $solicitud->documento_id = $documento->id;
+                $solicitud->save();
+
+            } elseif ($solicitud->tipo === 'Modificación' || $solicitud->tipo === 'modificacion') {
+                $doc = $solicitud->documento;
+                if ($doc) {
+                    // Marcar versiones anteriores como obsoletas
+                    VersionDoc::where('documento_id', $doc->id)->update(['estado' => 'obsoleto']);
+
+                    // Crear nueva versión (V2.0 o sucesiva)
+                    $versionActual = $doc->versiones()->max('numero_version') ?? '1.0';
+                    $nextVerNum = is_numeric($versionActual) ? number_format((float)$versionActual + 1.0, 1) : '2.0';
+
+                    $nuevaVersion = VersionDoc::create([
+                        'documento_id' => $doc->id,
+                        'numero_version' => $nextVerNum,
+                        'descripcion_cambio' => $solicitud->descripcion_cambio ?: ($solicitud->justificacion ?: 'Modificación oficial aprobada.'),
+                        'archivo_ruta' => $solicitud->adjunto_ruta ?: 'sgc/documentos/default.pdf',
+                        'archivo_nombre' => basename($solicitud->adjunto_ruta ?: 'documento_v2.pdf'),
+                        'archivo_tamano_kb' => 150,
+                        'archivo_formato' => pathinfo($solicitud->adjunto_ruta ?? 'pdf', PATHINFO_EXTENSION) ?: 'pdf',
+                        'estado' => 'vigente',
+                        'publicado_por' => $userId,
+                        'fecha_publicacion' => now(),
+                        'creado_por' => $userId,
+                        'creado_en' => now(),
+                    ]);
+
+                    $doc->update([
+                        'estado' => 'vigente',
+                        'fecha_proxima_revision' => now()->addYear()->toDateString(),
+                        'actualizado_en' => now(),
+                    ]);
+
+                    ListadoMaestro::updateOrCreate(
+                        ['documento_id' => $doc->id],
+                        [
+                            'version_id' => $nuevaVersion->id,
+                            'proceso_id' => $doc->proceso_id,
+                            'publicado_por' => $userId,
+                            'fecha_pub' => now(),
+                            'activo' => true,
+                        ]
+                    );
+                }
+            } elseif ($solicitud->tipo === 'Eliminación' || $solicitud->tipo === 'eliminacion') {
+                $doc = $solicitud->documento;
+                if ($doc) {
+                    $doc->update([
+                        'estado' => 'obsoleto',
+                        'fecha_obsolescencia' => now(),
+                    ]);
+                    ListadoMaestro::where('documento_id', $doc->id)->update(['activo' => false]);
+                }
+            }
+
+            // =========================================================================
+            // NOTIFICACIÓN AL LÍDER DE ÁREA
+            // =========================================================================
+            if ($solicitud->solicitado_por) {
+                Notificacion::notificarUsuario(
+                    $solicitud->solicitado_por,
+                    'solicitud_aprobada',
+                    "¡Solicitud Aprobada y Publicada! ({$solicitud->numero})",
+                    "Su solicitud {$solicitud->numero} ha sido APROBADA y el documento oficial ha sido incorporado al Listado Maestro vigente.",
+                    'solicitudes',
+                    $solicitud->id
+                );
+            }
+
+            // =========================================================================
+            // REGISTRO EN BITÁCORA
+            // =========================================================================
             Bitacora::registrar(
-                'aprobar_solicitud',
-                "Solicitud N° {$solicitud->numero} aprobada por {$userName}.",
+                'Aprobación',
+                "Solicitud N° {$solicitud->numero} ({$solicitud->tipo}) aprobada por {$userName} y publicada en el Listado Maestro.",
                 'solicitudes',
                 $solicitud->id,
-                ['estado' => 'radicada'],
-                ['estado' => 'aprobada', 'observaciones' => $solicitud->observaciones_resp]
+                ['estado' => $estadoAnterior],
+                ['estado' => 'aprobada', 'observaciones' => $solicitud->observaciones_resp],
+                'exitoso',
+                'Solicitudes'
             );
-
             event(new SolicitudRespondida($solicitud));
-        }
+        });
 
         return redirect()->route('sgc.solicitudes.index')
-            ->with('success', "La solicitud N° {$numero} ha sido aprobada exitosamente.");
+            ->with('success', "La solicitud N° {$solicitud->numero} ha sido aprobada y el documento oficial ha sido publicado exitosamente en el Listado Maestro.");
     }
 
     /**
@@ -169,31 +296,222 @@ class SolicitudController extends Controller
      */
     public function rechazar(Request $request, $id)
     {
-        $solicitud = Solicitud::find($id);
-        $numero = 'SOL-042';
+        $solicitud = Solicitud::findOrFail($id);
+        $userId = auth()->id();
+        $userName = auth()->user()->nombre_completo ?? auth()->user()->nombre_usuario ?? 'Responsable de Calidad';
 
-        if ($solicitud) {
-            $numero = $solicitud->numero;
-            $solicitud->estado = 'rechazada';
-            $solicitud->observaciones_resp = $request->input('observaciones');
-            $solicitud->save();
+        $estadoAnterior = $solicitud->estado;
+        $solicitud->estado = 'rechazada';
+        $solicitud->observaciones_resp = $request->input('observaciones', 'Solicitud rechazada por observaciones técnicas de Calidad.');
+        $solicitud->fecha_resolucion = now();
+        $solicitud->asignado_a = $userId;
+        $solicitud->save();
 
-            // Registro en bitácora
-            $userName = auth()->user()->nombre_completo ?? auth()->user()->nombre_usuario ?? 'Responsable de Calidad';
-            Bitacora::registrar(
-                'rechazar_solicitud',
-                "Solicitud N° {$solicitud->numero} rechazada por {$userName}.",
+        // Notificación al Líder de Área
+        if ($solicitud->solicitado_por) {
+            Notificacion::notificarUsuario(
+                $solicitud->solicitado_por,
+                'solicitud_rechazada',
+                "Solicitud Rechazada ({$solicitud->numero})",
+                "Su solicitud {$solicitud->numero} fue rechazada con la siguiente observación: {$solicitud->observaciones_resp}",
                 'solicitudes',
-                $solicitud->id,
-                ['estado' => 'radicada'],
-                ['estado' => 'rechazada', 'observaciones' => $solicitud->observaciones_resp]
+                $solicitud->id
             );
 
             event(new SolicitudRespondida($solicitud));
         }
 
+        // Registro en bitácora
+        Bitacora::registrar(
+            'Rechazo',
+            "Solicitud N° {$solicitud->numero} rechazada por {$userName}.",
+            'solicitudes',
+            $solicitud->id,
+            ['estado' => $estadoAnterior],
+            ['estado' => 'rechazada', 'observaciones' => $solicitud->observaciones_resp],
+            'exitoso',
+            'Solicitudes'
+        );
+
         return redirect()->route('sgc.solicitudes.index')
-            ->with('warning', "La solicitud N° {$numero} ha sido rechazada. Se notificó al solicitante con las observaciones.");
+            ->with('warning', "La solicitud N° {$solicitud->numero} ha sido rechazada. Se notificó al Líder de Área con las observaciones registradas.");
+    }
+
+    /**
+     * Radica una nueva solicitud en el sistema SGC (Líder de Área).
+     */
+    public function store(StoreSolicitudRequest $request)
+    {
+        $userId = auth()->id() ?? 1;
+        $userName = auth()->user()->nombre_completo ?? auth()->user()->nombre_usuario ?? 'Líder de Área';
+
+        $solicitud = DB::transaction(function () use ($request, $userId, $userName) {
+            $year = date('Y');
+            $consecutivo = Solicitud::whereYear('creado_en', $year)->count() + 1;
+            $numero = sprintf('SOL-%s-%04d', $year, $consecutivo);
+
+            $adjuntoRuta = null;
+            if ($request->hasFile('adjunto')) {
+                $file = $request->file('adjunto');
+                $filename = 'borrador_' . strtolower(preg_replace('/[^a-zA-Z0-9_-]/', '_', $numero)) . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $adjuntoRuta = $file->storeAs('sgc/solicitudes_adjuntos', $filename, 'public');
+            }
+
+            $procesoId = $request->proceso_id;
+            $areaId = $request->area_id;
+            $tipoDocId = $request->tipo_doc_id;
+
+            if ($request->filled('documento_id')) {
+                $doc = Documento::find($request->documento_id);
+                if ($doc) {
+                    $procesoId = $procesoId ?: $doc->proceso_id;
+                    $areaId = $areaId ?: $doc->area_id;
+                    $tipoDocId = $tipoDocId ?: $doc->tipo_doc_id;
+                }
+            }
+
+            $sol = Solicitud::create([
+                'numero' => $numero,
+                'tipo' => $request->tipo,
+                'estado' => 'radicada',
+                'documento_id' => $request->documento_id,
+                'nombre_propuesto' => $request->nombre_propuesto,
+                'proceso_id' => $procesoId,
+                'area_id' => $areaId,
+                'tipo_doc_id' => $tipoDocId,
+                'justificacion' => $request->justificacion,
+                'descripcion_cambio' => $request->descripcion_cambio,
+                'adjunto_ruta' => $adjuntoRuta,
+                'solicitado_por' => $userId,
+                'fecha_radicacion' => now(),
+                'creado_en' => now(),
+                'actualizado_en' => now(),
+            ]);
+
+            // Cargar relaciones para notificación y bitácora
+            $sol->load(['area', 'proceso', 'tipoDoc']);
+            $areaNombre = $sol->area->nombre ?? 'Centro Agroindustrial';
+
+            // =========================================================================
+            // NOTIFICAR EN TIEMPO REAL AL RESPONSABLE DE CALIDAD Y ADMINISTRADORES
+            // =========================================================================
+            Notificacion::notificarRol(
+                [1, 2, 'admin', 'administrador', 'resp_calidad', 'responsable_calidad'],
+                'solicitud_radicada',
+                "Nueva Solicitud Radicada ({$sol->numero})",
+                "El Líder de Área '{$userName}' ha radicado la solicitud {$sol->numero} ({$sol->tipo}) para el área '{$areaNombre}'.",
+                'solicitudes',
+                $sol->id,
+                $userId
+            );
+
+            // =========================================================================
+            // REGISTRO EN BITÁCORA
+            // =========================================================================
+            Bitacora::registrar(
+                'Creación',
+                "Radicó la solicitud de {$sol->tipo} N° {$sol->numero} para el área {$areaNombre}.",
+                'solicitudes',
+                $sol->id,
+                null,
+                [
+                    'numero' => $sol->numero,
+                    'tipo' => $sol->tipo,
+                    'proceso_id' => $sol->proceso_id,
+                    'area_id' => $sol->area_id
+                ],
+                'exitoso',
+                'Solicitudes',
+                $userId
+            );
+
+            return $sol;
+        });
+
+        $redirectRoute = (request()->routeIs('sgc.admin.*') || (auth()->check() && (auth()->user()->rol_id == 1 || str_contains(strtolower(auth()->user()->rol->nombre ?? ''), 'admin'))))
+            ? route('sgc.admin.solicitudes.index')
+            : route('sgc.lider_area.solicitudes.index');
+
+        return redirect($redirectRoute)
+            ->with('success', "Solicitud N° {$solicitud->numero} radicada exitosamente ante Calidad. Se ha notificado al Responsable de Calidad.");
+    }
+
+    /**
+     * Muestra las solicitudes radicadas exclusivamente por el usuario Administrador autenticado.
+     */
+    public function indexAdmin(Request $request)
+    {
+        $userId = auth()->id();
+        $query = Solicitud::with(['documento', 'proceso', 'area', 'tipoDoc', 'solicitante', 'asignado'])
+            ->where('solicitado_por', $userId);
+
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('numero', 'like', "%{$search}%")
+                  ->orWhere('justificacion', 'like', "%{$search}%")
+                  ->orWhere('nombre_propuesto', 'like', "%{$search}%")
+                  ->orWhereHas('documento', function ($qd) use ($search) {
+                      $qd->where('nombre', 'like', "%{$search}%")
+                         ->orWhere('codigo', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->filled('tipo') && $request->tipo !== 'all') {
+            $query->where('tipo', $request->tipo);
+        }
+
+        if ($request->filled('estado') && $request->estado !== 'all') {
+            $query->where('estado', $request->estado);
+        }
+
+        if ($request->filled('proceso_id') && $request->proceso_id !== 'all') {
+            $query->where('proceso_id', $request->proceso_id);
+        }
+
+        if ($request->filled('area_id') && $request->area_id !== 'all') {
+            $query->where('area_id', $request->area_id);
+        }
+
+        $baseMetricsQuery = Solicitud::where('solicitado_por', $userId);
+        $totalRadicadas = (clone $baseMetricsQuery)->count();
+        $enTramite = (clone $baseMetricsQuery)->whereIn('estado', ['radicada', 'en_revision'])->count();
+        $aprobadas = (clone $baseMetricsQuery)->where('estado', 'aprobada')->count();
+        $rechazadas = (clone $baseMetricsQuery)->whereIn('estado', ['rechazada', 'devuelta', 'cancelada'])->count();
+
+        $solicitudes = $query->orderBy('id', 'desc')->paginate(10)->appends($request->all());
+
+        $procesos = Proceso::where('activo', 1)->orderBy('nombre')->get();
+        $areas = Area::where('activo', 1)->orderBy('nombre')->get();
+        $tiposDoc = TipoDocumento::where('activo', 1)->orderBy('nombre')->get();
+        $documentos = Documento::with(['proceso', 'area', 'tipoDoc', 'versionActual'])
+            ->where('estado', 'vigente')
+            ->orderBy('codigo')
+            ->get();
+
+        return view('sgc::Admin.Solicitudes.index', compact(
+            'solicitudes',
+            'totalRadicadas',
+            'enTramite',
+            'aprobadas',
+            'rechazadas',
+            'procesos',
+            'areas',
+            'tiposDoc',
+            'documentos'
+        ));
+    }
+
+    /**
+     * Muestra el detalle completo de una solicitud para el Administrador.
+     */
+    public function showAdmin($id)
+    {
+        $solicitud = Solicitud::with(['documento.versionActual', 'proceso', 'area', 'tipoDoc', 'solicitante.rol', 'asignado'])
+            ->findOrFail($id);
+
+        return view('sgc::Admin.Solicitudes.Detalle', compact('solicitud'));
     }
 
     /**
@@ -267,85 +585,16 @@ class SolicitudController extends Controller
     }
 
     /**
-     * Radica una nueva solicitud en el sistema SGC.
-     */
-    public function store(StoreSolicitudRequest $request)
-    {
-        $userId = auth()->id() ?? 1;
-
-        $solicitud = DB::transaction(function () use ($request, $userId) {
-            $year = date('Y');
-            $consecutivo = Solicitud::whereYear('creado_en', $year)->count() + 1;
-            $numero = sprintf('SOL-%s-%04d', $year, $consecutivo);
-
-            $adjuntoRuta = null;
-            if ($request->hasFile('adjunto')) {
-                $file = $request->file('adjunto');
-                $filename = 'borrador_' . strtolower(preg_replace('/[^a-zA-Z0-9_-]/', '_', $numero)) . '_' . time() . '.' . $file->getClientOriginalExtension();
-                $adjuntoRuta = $file->storeAs('sgc/solicitudes_adjuntos', $filename, 'public');
-            }
-
-            $procesoId = $request->proceso_id;
-            $areaId = $request->area_id;
-            $tipoDocId = $request->tipo_doc_id;
-
-            if ($request->filled('documento_id')) {
-                $doc = Documento::find($request->documento_id);
-                if ($doc) {
-                    $procesoId = $procesoId ?: $doc->proceso_id;
-                    $areaId = $areaId ?: $doc->area_id;
-                    $tipoDocId = $tipoDocId ?: $doc->tipo_doc_id;
-                }
-            }
-
-            $sol = Solicitud::create([
-                'numero' => $numero,
-                'tipo' => $request->tipo,
-                'estado' => 'radicada',
-                'documento_id' => $request->documento_id,
-                'nombre_propuesto' => $request->nombre_propuesto,
-                'proceso_id' => $procesoId,
-                'area_id' => $areaId,
-                'tipo_doc_id' => $tipoDocId,
-                'justificacion' => $request->justificacion,
-                'descripcion_cambio' => $request->descripcion_cambio,
-                'adjunto_ruta' => $adjuntoRuta,
-                'solicitado_por' => $userId,
-                'fecha_radicacion' => now(),
-                'creado_en' => now(),
-                'actualizado_en' => now(),
-            ]);
-
-            $userName = auth()->user()->nombre_completo ?? auth()->user()->nombre_usuario ?? 'Líder de Área';
-            Bitacora::registrar(
-                'radicar_solicitud',
-                "Solicitud de {$sol->tipo} N° {$sol->numero} radicada por {$userName}.",
-                'solicitudes',
-                $sol->id,
-                null,
-                [
-                    'numero' => $sol->numero,
-                    'tipo' => $sol->tipo,
-                    'proceso_id' => $sol->proceso_id,
-                    'area_id' => $sol->area_id
-                ]
-            );
-
-            event(new SolicitudRadicada($sol));
-
-            return $sol;
-        });
-
-        return redirect()->route('sgc.lider_area.solicitudes.index')->with('success', "Solicitud N° {$solicitud->numero} radicada exitosamente ante Calidad.");
-    }
-
-    /**
-     * Muestra el detalle completo de una solicitud documental (Líder).
+     * Muestra el detalle completo de una solicitud documental (Líder o Admin).
      */
     public function show($id)
     {
         $solicitud = Solicitud::with(['documento.versionActual', 'proceso', 'area', 'tipoDoc', 'solicitante.rol', 'asignado'])
             ->findOrFail($id);
+
+        if (request()->routeIs('sgc.admin.*') || (auth()->check() && (auth()->user()->rol_id == 1 || str_contains(strtolower(auth()->user()->rol->nombre ?? ''), 'admin')))) {
+            return view('sgc::Admin.Solicitudes.Detalle', compact('solicitud'));
+        }
 
         return view('sgc::Lider_Area.Solicitudes.Detalle', compact('solicitud'));
     }
@@ -355,9 +604,9 @@ class SolicitudController extends Controller
      */
     public function downloadAdjunto($id)
     {
-        $solicitud = Solicitud::find($id);
+        $solicitud = Solicitud::findOrFail($id);
 
-        if (!$solicitud || !$solicitud->adjunto_ruta || !Storage::disk('public')->exists($solicitud->adjunto_ruta)) {
+        if (!$solicitud->adjunto_ruta || !Storage::disk('public')->exists($solicitud->adjunto_ruta)) {
             return redirect()->back()->with('error', 'El archivo borrador adjunto no se encuentra disponible.');
         }
 

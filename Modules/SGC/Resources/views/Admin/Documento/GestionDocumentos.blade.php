@@ -208,6 +208,11 @@
                             <!-- Acciones -->
                             <td class="pe-4 py-3 text-center">
                                 <div class="d-inline-flex align-items-center justify-content-center gap-1">
+                                    <!-- Historial de Cambios y Versiones -->
+                                    <a href="{{ route('sgc.versiones.historial-view', $docItem->id) }}" class="btn btn-sm btn-outline-success rounded-2 d-inline-flex align-items-center justify-content-center" title="Historial de Cambios y Versiones">
+                                        <i class="fas fa-timeline" style="font-size: 13px;"></i>
+                                    </a>
+
                                     <!-- Ver Detalle / Historial / Trazabilidad (Ojo SVG) -->
                                     <button type="button" class="btn btn-sm btn-outline-secondary rounded-2 d-inline-flex align-items-center justify-content-center" title="Ver Detalle y Trazabilidad" onclick="openDetailModal({{ $docItem->id }})">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
@@ -264,7 +269,7 @@
                 Mostrando {{ $documentos->firstItem() ?? 0 }}-{{ $documentos->lastItem() ?? 0 }} de {{ $documentos->total() }} documentos registrados
             </div>
             <div>
-                {{ $documentos->links('pagination::bootstrap-5') }}
+                {{ $documentos->links('sgc::layouts.partials.pagination') }}
             </div>
         </div>
     </div>
@@ -595,137 +600,163 @@
     </div>
 </div>
 
-<!-- ======= MODAL: DETALLE Y TRAZABILIDAD / HISTORIAL (FLUJO 2) ======= -->
+<!-- ======= MODAL: DETALLE Y CONTROL DE VERSIONES (FLUJO 2 - VERDE SUAVE) ======= -->
 <div class="modal fade" id="modalDetailDoc" tabindex="-1" aria-labelledby="modalDetailDocLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow-lg rounded-3">
-            <div class="modal-header bg-light border-bottom px-4 py-3">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header bg-white border-bottom px-4 py-3 d-flex align-items-center justify-content-between" style="border-color: #eef2f6 !important;">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-3 p-2 bg-white border text-secondary shadow-sm d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-file-earmark-text" viewBox="0 0 16 16">
+                    <div class="rounded-3 p-2 bg-white border text-secondary shadow-xs d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; border-color: #e2e8f0 !important; background-color: #f8fafc !important;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-file-earmark-text text-dark" viewBox="0 0 16 16">
                             <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"/>
                             <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"/>
                         </svg>
                     </div>
                     <div>
-                        <h5 class="modal-title fw-bold text-dark mb-0 fs-6" id="detail_header_title">Detalle del Documento</h5>
-                        <p class="text-muted small mb-0" id="detail_header_subtitle" style="font-size: 12.5px;">Metadatos, historial de versiones y bitácora de trazabilidad</p>
+                        <h5 class="modal-title fw-bold text-dark mb-0 fs-6 font-heading" id="detail_header_title">Detalle del Documento</h5>
+                        <p class="text-muted small mb-0" id="detail_header_subtitle" style="font-size: 12.5px;">Metadatos e historial de versiones</p>
                     </div>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body px-4 py-4">
-                <!-- Nav tabs -->
-                <ul class="nav nav-tabs mb-3" id="detailDocTabs" role="tablist">
+            
+            <!-- Modal Subheader Tabs (2 Tabs Only) -->
+            <div class="bg-white border-bottom px-4 pt-1" style="border-color: #eef2f6 !important;">
+                <ul class="nav nav-tabs border-0" id="detailDocTabs" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active fw-semibold" id="tab-meta-tab" data-bs-toggle="tab" data-bs-target="#tab-meta" type="button" role="tab">Metadatos</button>
+                        <button class="nav-link active fw-bold text-dark border-0 border-bottom border-success border-3 pb-2.5 px-3" id="tab-meta-tab" data-bs-toggle="tab" data-bs-target="#tab-meta" type="button" role="tab" style="font-size: 14px;">Metadatos</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link fw-semibold" id="tab-versiones-tab" data-bs-toggle="tab" data-bs-target="#tab-versiones" type="button" role="tab">Historial de Versiones</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link fw-semibold" id="tab-bitacora-tab" data-bs-toggle="tab" data-bs-target="#tab-bitacora" type="button" role="tab">Bitácora de Trazabilidad</button>
+                        <button class="nav-link fw-bold text-muted border-0 pb-2.5 px-3" id="tab-versiones-tab" data-bs-toggle="tab" data-bs-target="#tab-versiones" type="button" role="tab" style="font-size: 14px;">Historial de Versiones</button>
                     </li>
                 </ul>
+            </div>
 
+            <div class="modal-body px-4 py-4" style="background-color: #ffffff; min-height: 380px;">
                 <div class="tab-content" id="detailDocTabsContent">
                     <!-- Tab 1: Metadatos -->
                     <div class="tab-pane fade show active" id="tab-meta" role="tabpanel">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <div class="p-3 bg-light rounded-3">
-                                    <small class="text-muted d-block">Código</small>
-                                    <span class="fw-bold fs-6" id="detail_codigo" style="color: #39A900;">-</span>
+                                <div class="p-3 rounded-3" style="background-color: #f8fafc; border: 1px solid #f1f5f9;">
+                                    <small class="text-muted d-block fw-semibold mb-1" style="font-size: 11px;">Código</small>
+                                    <span class="fw-bold fs-6 font-monospace" id="detail_codigo" style="color: #39A900;">-</span>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="p-3 bg-light rounded-3">
-                                    <small class="text-muted d-block">Estado</small>
+                                <div class="p-3 rounded-3" style="background-color: #f8fafc; border: 1px solid #f1f5f9;">
+                                    <small class="text-muted d-block fw-semibold mb-1" style="font-size: 11px;">Estado</small>
                                     <span class="fw-bold fs-6 text-dark" id="detail_estado">-</span>
                                 </div>
                             </div>
                             <div class="col-12">
-                                <div class="p-3 bg-light rounded-3">
-                                    <small class="text-muted d-block">Nombre del Documento</small>
-                                    <span class="fw-bold text-dark" id="detail_nombre">-</span>
+                                <div class="p-3 rounded-3" style="background-color: #f8fafc; border: 1px solid #f1f5f9;">
+                                    <small class="text-muted d-block fw-semibold mb-1" style="font-size: 11px;">Nombre del Documento</small>
+                                    <span class="fw-bold text-dark fs-6" id="detail_nombre">-</span>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="p-3 bg-light rounded-3">
-                                    <small class="text-muted d-block">Proceso</small>
+                                <div class="p-3 rounded-3" style="background-color: #f8fafc; border: 1px solid #f1f5f9;">
+                                    <small class="text-muted d-block fw-semibold mb-1" style="font-size: 11px;">Proceso</small>
                                     <span class="fw-semibold text-dark" id="detail_proceso">-</span>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="p-3 bg-light rounded-3">
-                                    <small class="text-muted d-block">Área</small>
+                                <div class="p-3 rounded-3" style="background-color: #f8fafc; border: 1px solid #f1f5f9;">
+                                    <small class="text-muted d-block fw-semibold mb-1" style="font-size: 11px;">Área</small>
                                     <span class="fw-semibold text-dark" id="detail_area">-</span>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="p-3 bg-light rounded-3">
-                                    <small class="text-muted d-block">Tipo Documental</small>
+                                <div class="p-3 rounded-3" style="background-color: #f8fafc; border: 1px solid #f1f5f9;">
+                                    <small class="text-muted d-block fw-semibold mb-1" style="font-size: 11px;">Tipo Documental</small>
                                     <span class="fw-semibold text-dark" id="detail_tipo">-</span>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="p-3 bg-light rounded-3">
-                                    <small class="text-muted d-block">Funcionario Responsable</small>
+                                <div class="p-3 rounded-3" style="background-color: #f8fafc; border: 1px solid #f1f5f9;">
+                                    <small class="text-muted d-block fw-semibold mb-1" style="font-size: 11px;">Funcionario Responsable</small>
                                     <span class="fw-semibold text-dark" id="detail_responsable">-</span>
                                 </div>
                             </div>
                             <div class="col-12">
-                                <div class="p-3 bg-light rounded-3">
-                                    <small class="text-muted d-block">Descripción / Objeto</small>
+                                <div class="p-3 rounded-3" style="background-color: #f8fafc; border: 1px solid #f1f5f9;">
+                                    <small class="text-muted d-block fw-semibold mb-1" style="font-size: 11px;">Descripción / Objeto</small>
                                     <p class="mb-0 text-dark small" id="detail_descripcion">-</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Tab 2: Historial de Versiones -->
+                    <!-- Tab 2: Historial de Versiones (Línea de tiempo) -->
                     <div class="tab-pane fade" id="tab-versiones" role="tabpanel">
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-hover align-middle mb-0" style="font-size: 13px;">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Versión</th>
-                                        <th>Descripción del Cambio</th>
-                                        <th>Formato</th>
-                                        <th>Tamaño</th>
-                                        <th>Fecha</th>
-                                        <th>Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="detail_versiones_tbody">
-                                    <!-- Inyectado vía JS -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                        <!-- Card Mini-Resumen Superior -->
+                        <div class="card border rounded-4 bg-white p-3.5 mb-3 shadow-xs" style="border-color: #e2e8f0 !important;">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pb-2.5 mb-2.5 border-bottom" style="border-color: #f1f5f9 !important;">
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span class="badge px-2.5 py-1.5 fw-bold" style="background-color: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; font-size: 12.5px; border-radius: 6px;" id="detail_timeline_badge_codigo">
+                                        -
+                                    </span>
+                                    <h6 class="fw-bold text-dark mb-0 font-heading" style="font-size: 16px;" id="detail_timeline_doc_nombre">
+                                        -
+                                    </h6>
+                                </div>
+                                <div>
+                                    <span class="badge px-3 py-1.5 fw-bold" style="background-color: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; font-size: 12.5px; border-radius: 20px;" id="detail_timeline_vigente_badge">
+                                        Vigente
+                                    </span>
+                                </div>
+                            </div>
 
-                    <!-- Tab 3: Bitácora de Trazabilidad -->
-                    <div class="tab-pane fade" id="tab-bitacora" role="tabpanel">
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-hover align-middle mb-0" style="font-size: 12.5px;">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Fecha y Hora</th>
-                                        <th>Acción</th>
-                                        <th>Usuario</th>
-                                        <th>Detalle / Auditoría</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="detail_bitacora_tbody">
-                                    <!-- Inyectado vía JS -->
-                                </tbody>
-                            </table>
+                            <div class="row g-2 text-start">
+                                <div class="col-6 col-sm-3">
+                                    <small class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size: 10px; letter-spacing: 0.5px;">PROCESO</small>
+                                    <strong class="text-dark d-block text-truncate" style="font-size: 13.5px;" id="detail_timeline_proceso">-</strong>
+                                </div>
+                                <div class="col-6 col-sm-3">
+                                    <small class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size: 10px; letter-spacing: 0.5px;">TIPO DE DOCUMENTO</small>
+                                    <strong class="text-dark d-block text-truncate" style="font-size: 13.5px;" id="detail_timeline_tipo">-</strong>
+                                </div>
+                                <div class="col-6 col-sm-3">
+                                    <small class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size: 10px; letter-spacing: 0.5px;">RESPONSABLE DE REVISIÓN</small>
+                                    <strong class="text-dark d-block text-truncate" style="font-size: 13.5px;" id="detail_timeline_responsable">-</strong>
+                                </div>
+                                <div class="col-6 col-sm-3">
+                                    <small class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size: 10px; letter-spacing: 0.5px;">FECHA ENTRADA VIGENCIA</small>
+                                    <strong class="text-dark d-block text-truncate" style="font-size: 13.5px;" id="detail_timeline_fecha">-</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Timeline Vertical -->
+                        <div class="card border rounded-4 bg-white p-3.5 shadow-xs" style="border-color: #e2e8f0 !important;">
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pb-3 mb-3 border-bottom" style="border-color: #f1f5f9 !important;">
+                                <div class="d-flex flex-wrap align-items-center gap-2">
+                                    <span class="fw-bold text-dark" style="font-size: 13px;">Filtrar historial:</span>
+                                    <select id="detailVersionTypeFilter" class="form-select form-select-sm bg-white border rounded-3 px-2.5 py-1.5 fw-semibold text-dark shadow-xs" style="font-size: 12.5px; width: auto; min-width: 180px;" onchange="filterAdminModalTimeline()">
+                                        <option value="all">Tipo de Cambio: Todos</option>
+                                        <option value="inicial">Creación inicial</option>
+                                        <option value="contenido">Actualización de contenido</option>
+                                        <option value="estado">Cambio de estado</option>
+                                        <option value="correccion">Corrección</option>
+                                    </select>
+                                    <div class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 border rounded-3 bg-white text-muted shadow-xs" style="font-size: 12px;">
+                                        <i class="far fa-calendar-alt text-secondary"></i>
+                                        <span>Historial completo</span>
+                                    </div>
+                                </div>
+                                <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1" id="detailTimelineCountBadge" style="font-size: 11px;">1 Versión</span>
+                            </div>
+
+                            <div class="timeline-v-container position-relative px-2 py-1" id="detail_versiones_timeline">
+                                <!-- Inyectado vía JS -->
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer bg-light border-top px-4 py-3">
-                <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cerrar</button>
+            <div class="modal-footer bg-light border-top px-4 py-3 d-flex justify-content-end align-items-center" style="border-color: #eef2f6 !important;">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-3 fw-semibold" style="font-size: 13px;" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
@@ -753,9 +784,23 @@
     }
 
     /**
-     * Carga y muestra los metadatos, versiones y bitácora del documento en el modal de detalle (Flujo 2)
+     * Carga y muestra los metadatos y el historial de versiones en el modal de detalle (Flujo 2)
      */
+    let currentAdminDocVersions = [];
+    let currentAdminDocObj = null;
+
     function openDetailModal(docId) {
+        // Reset tab al primer tab (Metadatos)
+        const firstTabBtn = document.getElementById('tab-meta-tab');
+        if (firstTabBtn) {
+            const tab = new bootstrap.Tab(firstTabBtn);
+            tab.show();
+        }
+
+        // Reset selector de filtro
+        const filterSelect = document.getElementById('detailVersionTypeFilter');
+        if (filterSelect) filterSelect.value = 'all';
+
         fetch('/sgc/documentos/' + docId, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
@@ -766,9 +811,13 @@
         .then(data => {
             if (data.success) {
                 const doc = data.documento;
-                const bitacoras = data.bitacoras;
+                currentAdminDocObj = doc;
+                currentAdminDocVersions = doc.versiones || [];
 
                 document.getElementById('detail_header_title').innerText = doc.codigo + ' — ' + doc.nombre;
+                document.getElementById('detail_header_subtitle').innerText = 'Metadatos e historial de versiones';
+                
+                // 1. Tab Metadatos
                 document.getElementById('detail_codigo').innerText = doc.codigo;
                 document.getElementById('detail_nombre').innerText = doc.nombre;
                 document.getElementById('detail_estado').innerText = doc.estado ? doc.estado.toUpperCase() : 'VIGENTE';
@@ -778,43 +827,24 @@
                 document.getElementById('detail_responsable').innerText = doc.responsable ? doc.responsable.nombre_completo : 'N/A';
                 document.getElementById('detail_descripcion').innerText = doc.descripcion || 'Sin descripción adicional.';
 
-                // Poblar Versiones
-                const verTbody = document.getElementById('detail_versiones_tbody');
-                verTbody.innerHTML = '';
-                if (doc.versiones && doc.versiones.length > 0) {
-                    doc.versiones.forEach(v => {
-                        verTbody.innerHTML += `
-                            <tr>
-                                <td class="fw-bold text-success">V.${v.numero_version}</td>
-                                <td>${v.descripcion_cambio || 'Sin descripción'}</td>
-                                <td><span class="badge bg-secondary text-uppercase">${v.archivo_formato || 'PDF'}</span></td>
-                                <td>${v.archivo_tamano_kb ? v.archivo_tamano_kb + ' KB' : 'N/A'}</td>
-                                <td>${v.creado_en ? v.creado_en.substring(0, 10) : '-'}</td>
-                                <td><span class="badge ${v.estado === 'vigente' ? 'bg-success' : 'bg-warning text-dark'}">${v.estado}</span></td>
-                            </tr>
-                        `;
-                    });
-                } else {
-                    verTbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No hay versiones registradas.</td></tr>';
+                // 2. Tab Historial Mini-Resumen
+                document.getElementById('detail_timeline_badge_codigo').innerText = doc.codigo;
+                document.getElementById('detail_timeline_doc_nombre').innerText = doc.nombre;
+                const verActual = doc.version_actual ? doc.version_actual.numero_version : (currentAdminDocVersions.length > 0 ? currentAdminDocVersions[0].numero_version : '1.0');
+                document.getElementById('detail_timeline_vigente_badge').innerText = 'Vigente (V' + verActual + ')';
+                document.getElementById('detail_timeline_proceso').innerText = doc.proceso ? doc.proceso.nombre : 'N/A';
+                document.getElementById('detail_timeline_tipo').innerText = doc.tipo_doc ? doc.tipo_doc.nombre : 'N/A';
+                document.getElementById('detail_timeline_responsable').innerText = doc.responsable ? doc.responsable.nombre_completo : 'N/A';
+                document.getElementById('detail_timeline_fecha').innerText = doc.fecha_publicacion ? doc.fecha_publicacion.substring(0, 10) : (doc.creado_en ? doc.creado_en.substring(0, 10) : '-');
+
+                // 3. Contador
+                const countBadge = document.getElementById('detailTimelineCountBadge');
+                if (countBadge) {
+                    countBadge.innerText = currentAdminDocVersions.length + (currentAdminDocVersions.length === 1 ? ' Versión' : ' Versiones');
                 }
 
-                // Poblar Bitácora
-                const bitTbody = document.getElementById('detail_bitacora_tbody');
-                bitTbody.innerHTML = '';
-                if (bitacoras && bitacoras.length > 0) {
-                    bitacoras.forEach(b => {
-                        bitTbody.innerHTML += `
-                            <tr>
-                                <td>${b.registrado_en ? b.registrado_en.substring(0, 19).replace('T', ' ') : '-'}</td>
-                                <td class="fw-semibold text-primary">${b.accion}</td>
-                                <td>${b.usuario ? b.usuario.nombre_completo : 'Sistema'}</td>
-                                <td>${b.descripcion}</td>
-                            </tr>
-                        `;
-                    });
-                } else {
-                    bitTbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No hay eventos de trazabilidad registrados.</td></tr>';
-                }
+                // 4. Renderizar Timeline
+                renderAdminTimelineList(currentAdminDocVersions, 'all', doc);
 
                 var modal = new bootstrap.Modal(document.getElementById('modalDetailDoc'));
                 modal.show();
@@ -823,6 +853,78 @@
         .catch(err => {
             console.error('Error cargando detalle del documento:', err);
         });
+    }
+
+    function renderAdminTimelineList(versions, filterType, doc) {
+        const container = document.getElementById('detail_versiones_timeline');
+        if (!container) return;
+
+        const filtered = versions.filter(v => {
+            if (filterType === 'all') return true;
+            const tb = (v.tipo_cambio || v.descripcion_cambio || '').toLowerCase();
+            if (filterType === 'inicial') return tb.includes('inicial') || tb.includes('creación') || tb.includes('creacion') || v.numero_version == '1.0' || v.numero_version == '1';
+            if (filterType === 'contenido') return tb.includes('contenido') || tb.includes('actualización') || tb.includes('actualizacion');
+            if (filterType === 'estado') return tb.includes('estado') || tb.includes('vigente') || tb.includes('obsoleto');
+            if (filterType === 'correccion') return tb.includes('corrección') || tb.includes('correccion');
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-4 text-muted">
+                    <i class="fas fa-filter-circle-xmark fs-3 text-secondary opacity-50 mb-2 d-block"></i>
+                    <span class="small">No se encontraron versiones para el filtro seleccionado.</span>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        filtered.forEach((v, idx) => {
+            const isLast = idx === filtered.length - 1;
+            const formato = (v.archivo_formato || 'PDF').toUpperCase();
+            const autorNom = v.creador ? (v.creador.nombre_completo || v.creador.nombre_usuario) : 'Responsable de Calidad';
+            const tipoBadge = (v.numero_version == '1.0' || v.numero_version == '1') ? 'Creación inicial' : 'Actualización de contenido';
+            const fechaStr = v.fecha_publicacion ? v.fecha_publicacion.substring(0, 10) : (v.creado_en ? v.creado_en.substring(0, 10) : '-');
+
+            html += `
+                <div class="timeline-v-item ${isLast ? 'timeline-v-item-last' : ''}">
+                    <div class="timeline-v-dot"></div>
+                    <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <strong class="text-dark fw-bold font-heading" style="font-size: 15px;">
+                                Versión ${v.numero_version}
+                            </strong>
+                            <span class="badge px-2.5 py-0.5 fw-semibold" style="background-color: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; font-size: 11.5px; border-radius: 6px;">
+                                ${tipoBadge}
+                            </span>
+                        </div>
+                        <span class="text-muted" style="font-size: 12.5px;">
+                            ${fechaStr}
+                        </span>
+                    </div>
+                    <div class="text-secondary fw-semibold mb-1" style="font-size: 13px; color: #475569 !important;">
+                        Por: ${autorNom} (Resp. Calidad)
+                    </div>
+                    <p class="mb-2 text-muted" style="font-size: 13.5px; line-height: 1.5; color: #64748b !important;">
+                        ${v.descripcion_cambio || 'Prueba de Creacion y publicacion'}
+                    </p>
+                    <div>
+                        <a href="/sgc/public/versiones/${v.id}/download" class="btn-timeline-download" title="Descargar archivo">
+                            <i class="fas fa-file-arrow-down text-success"></i>
+                            <span>Descargar adjunto (${formato})</span>
+                        </a>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    function filterAdminModalTimeline() {
+        const filterVal = document.getElementById('detailVersionTypeFilter').value;
+        renderAdminTimelineList(currentAdminDocVersions, filterVal, currentAdminDocObj);
     }
 
     /**
@@ -947,4 +1049,68 @@
         }
     });
 </script>
+<style>
+    .timeline-v-container {
+        position: relative;
+        padding-left: 6px;
+    }
+
+    .timeline-v-container::before {
+        content: '';
+        position: absolute;
+        top: 10px;
+        bottom: 24px;
+        left: 17px;
+        width: 2px;
+        background-color: #e2e8f0;
+        z-index: 1;
+    }
+
+    .timeline-v-item {
+        position: relative;
+        padding-left: 34px;
+        padding-bottom: 24px;
+    }
+
+    .timeline-v-item-last {
+        padding-bottom: 6px;
+    }
+
+    .timeline-v-dot {
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        left: 11px;
+        top: 4px;
+        border-radius: 50%;
+        background-color: #22c55e;
+        border: 3px solid #ffffff;
+        box-shadow: 0 0 0 1.5px #86efac;
+        z-index: 2;
+    }
+
+    .btn-timeline-download {
+        background-color: #ffffff;
+        color: #15803d;
+        border: 1.2px solid #bbf7d0;
+        font-weight: 600;
+        font-size: 12.5px;
+        padding: 5px 14px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        text-decoration: none;
+        transition: all 0.22s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .btn-timeline-download:hover {
+        background-color: #f0fdf4;
+        color: #166534;
+        border-color: #86efac;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(34, 197, 94, 0.18);
+    }
+</style>
 @endpush

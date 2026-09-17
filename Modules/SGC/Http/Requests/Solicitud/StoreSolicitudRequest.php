@@ -20,13 +20,15 @@ class StoreSolicitudRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tipo'         => 'required|in:creacion,modificacion,eliminacion',
-            'proceso_id'   => 'required|exists:procesos,id',
-            'area_id'      => 'required|exists:areas,id',
-            'tipo_doc_id'  => 'nullable|exists:tipos_documento,id',
-            'documento_id' => 'nullable|exists:documentos,id',
-            'justificacion'=> 'required|string|min:10',
-            'adjunto'      => 'nullable|file|mimes:pdf,docx,doc,xlsx,xls,png,jpg|max:20480',
+            'tipo'              => 'required|in:creacion,modificacion,eliminacion,Creación,Modificación,Eliminación,Creacion,Modificacion,Eliminacion',
+            'proceso_id'        => 'required|exists:procesos,id',
+            'area_id'           => 'required|exists:areas,id',
+            'tipo_doc_id'       => 'nullable|exists:tipos_documento,id',
+            'documento_id'      => 'nullable|exists:documentos,id',
+            'nombre_propuesto'  => 'nullable|string|max:255',
+            'descripcion_cambio'=> 'nullable|string',
+            'justificacion'     => 'required|string|min:10',
+            'adjunto'           => 'nullable|file|mimes:pdf,docx,doc,xlsx,xls,png,jpg|max:20480',
         ];
     }
 

@@ -37,12 +37,26 @@ class Rol extends Model
 
     /**
      * Verifica si el rol tiene un permiso asignado para un módulo y acción opcional.
+     * Soporta múltiples acciones separadas por '|' o ',' (operador OR).
      */
     public function tienePermiso(string $modulo, ?string $accion = null): bool
     {
+        if (!$accion) {
+            return $this->permisos()->where('modulo', $modulo)->exists();
+        }
+
+        if (str_contains($accion, '|') || str_contains($accion, ',')) {
+            $delimitador = str_contains($accion, '|') ? '|' : ',';
+            $acciones = array_map('trim', explode($delimitador, $accion));
+            return $this->permisos()
+                ->where('modulo', $modulo)
+                ->whereIn('accion', $acciones)
+                ->exists();
+        }
+
         return $this->permisos()
             ->where('modulo', $modulo)
-            ->when($accion, fn($query) => $query->where('accion', $accion))
+            ->where('accion', $accion)
             ->exists();
     }
 }

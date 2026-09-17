@@ -313,6 +313,73 @@
         .sidebar::-webkit-scrollbar-track {
             background: transparent;
         }
+
+        /* ======= ESTILIZACIÓN GLOBAL DE PAGINADORES SGC (VERDE SENA) ======= */
+        .pagination, .custom-pagination {
+            margin-bottom: 0 !important;
+            gap: 4px !important;
+            display: flex !important;
+            align-items: center !important;
+            list-style: none !important;
+            padding-left: 0 !important;
+        }
+
+        .pagination .page-item .page-link,
+        .custom-pagination .page-item .page-link {
+            color: #475569 !important;
+            background-color: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            padding: 5px 11px !important;
+            min-width: 34px !important;
+            height: 34px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            text-decoration: none !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+        }
+
+        .pagination .page-item:first-child .page-link,
+        .pagination .page-item:last-child .page-link {
+            border-radius: 8px !important;
+        }
+
+        .pagination .page-item .page-link:hover:not(.disabled),
+        .custom-pagination .page-item .page-link:hover:not(.disabled) {
+            background-color: #eaf8ea !important;
+            border-color: #39A900 !important;
+            color: #007832 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(57, 169, 0, 0.18) !important;
+        }
+
+        .pagination .page-item.active .page-link,
+        .custom-pagination .page-item.active .page-link {
+            background: linear-gradient(135deg, #39A900 0%, #2e8b00 100%) !important;
+            border-color: #39A900 !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            box-shadow: 0 3px 8px rgba(57, 169, 0, 0.35) !important;
+        }
+
+        .pagination .page-item.disabled .page-link,
+        .custom-pagination .page-item.disabled .page-link {
+            background-color: #f8fafc !important;
+            border-color: #e2e8f0 !important;
+            color: #cbd5e1 !important;
+            cursor: not-allowed !important;
+            box-shadow: none !important;
+            opacity: 0.7;
+        }
+
+        /* Ocultar textos en inglés duplicados generados por paginadores predeterminados */
+        nav .d-none.flex-sm-fill.d-sm-flex.align-items-sm-center.justify-content-sm-between > div:first-child {
+            display: none !important;
+        }
     </style>
     @stack('styles')
 </head>
@@ -347,23 +414,64 @@
 
             <!-- Global Flash Alerts -->
             @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show border-0 rounded-3 shadow-sm mb-4" role="alert">
-                    <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+                <div class="alert alert-success alert-dismissible fade show border-0 rounded-4 shadow-sm mb-4 d-flex align-items-center" role="alert" style="background-color: #ecfdf5; border-left: 5px solid #10b981 !important;">
+                    <div class="rounded-circle p-2 bg-success text-white me-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <strong class="d-block text-success" style="font-size: 13.5px;">Operación Exitosa</strong>
+                        <span class="text-dark small">{{ session('success') }}</span>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show border-0 rounded-4 shadow-sm mb-4 d-flex align-items-center" role="alert" style="background-color: #fef2f2; border-left: 5px solid #ef4444 !important;">
+                    <div class="rounded-circle p-2 bg-danger text-white me-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;">
+                        <i class="fas fa-shield-xmark"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <strong class="d-block text-danger" style="font-size: 13.5px;">Acceso Bloqueado / Error</strong>
+                        <span class="text-dark small">{{ session('error') }}</span>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if(session('warning'))
+                <div class="alert alert-warning alert-dismissible fade show border-0 rounded-4 shadow-sm mb-4 d-flex align-items-center" role="alert" style="background-color: #fffbeb; border-left: 5px solid #f59e0b !important;">
+                    <div class="rounded-circle p-2 bg-warning text-dark me-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;">
+                        <i class="fas fa-triangle-exclamation"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <strong class="d-block text-dark" style="font-size: 13.5px;">Advertencia de Seguridad</strong>
+                        <span class="text-dark small">{{ session('warning') }}</span>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
 
             @if(session('info'))
-                <div class="alert alert-info alert-dismissible fade show border-0 rounded-3 shadow-sm mb-4" role="alert">
-                    <i class="fas fa-info-circle me-2"></i> {{ session('info') }}
+                <div class="alert alert-info alert-dismissible fade show border-0 rounded-4 shadow-sm mb-4 d-flex align-items-center" role="alert" style="background-color: #f0f9ff; border-left: 5px solid #0284c7 !important;">
+                    <div class="rounded-circle p-2 bg-info text-white me-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;">
+                        <i class="fas fa-circle-info"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <strong class="d-block text-info" style="font-size: 13.5px;">Información</strong>
+                        <span class="text-dark small">{{ session('info') }}</span>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
 
             @if(isset($errors) && $errors->any())
-                <div class="alert alert-danger alert-dismissible fade show border-0 rounded-3 shadow-sm mb-4" role="alert">
-                    <i class="fas fa-triangle-exclamation me-2"></i> Corrige los siguientes errores:
-                    <ul class="mb-0 mt-2 small">
+                <div class="alert alert-danger alert-dismissible fade show border-0 rounded-4 shadow-sm mb-4" role="alert" style="background-color: #fef2f2; border-left: 5px solid #ef4444 !important;">
+                    <div class="d-flex align-items-center gap-2 mb-2 text-danger fw-bold">
+                        <i class="fas fa-triangle-exclamation"></i>
+                        <span>Corrige los siguientes inconvenientes:</span>
+                    </div>
+                    <ul class="mb-0 small text-dark ps-3">
                         @foreach($errors->all() as $err)
                             <li>{{ $err }}</li>
                         @endforeach

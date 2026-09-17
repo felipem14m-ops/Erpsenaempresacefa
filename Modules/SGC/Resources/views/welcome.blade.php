@@ -701,6 +701,112 @@
         .stagger-delay-4 { transition-delay: 0.4s !important; }
         .stagger-delay-5 { transition-delay: 0.5s !important; }
         .stagger-delay-6 { transition-delay: 0.6s !important; }
+
+        /* ======= ESTILOS DEL MODAL DE DETALLE Y LÍNEA DE TIEMPO (VERDE SUAVE) ======= */
+        .modal-tab-btn {
+            color: #64748b;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 8px 18px 12px 18px;
+            border: none;
+            background: transparent;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .modal-tab-btn.active {
+            color: #0f172a !important;
+            font-weight: 700 !important;
+        }
+
+        .modal-tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #16a34a;
+            border-radius: 3px 3px 0 0;
+        }
+
+        .modal-info-card {
+            background-color: #f8fafc;
+            border: 1px solid #eef2f6;
+            border-radius: 12px;
+            padding: 14px 16px;
+            height: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .modal-info-card:hover {
+            border-color: #dcfce7;
+            background-color: #f0fdf4;
+        }
+
+        /* Timeline Vertical Exacto del Diseño Institucional */
+        .timeline-v-container {
+            position: relative;
+            padding-left: 6px;
+        }
+
+        .timeline-v-container::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            bottom: 24px;
+            left: 17px;
+            width: 2px;
+            background-color: #e2e8f0;
+            z-index: 1;
+        }
+
+        .timeline-v-item {
+            position: relative;
+            padding-left: 34px;
+            padding-bottom: 24px;
+        }
+
+        .timeline-v-item-last {
+            padding-bottom: 6px;
+        }
+
+        .timeline-v-dot {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            left: 11px;
+            top: 4px;
+            border-radius: 50%;
+            background-color: #22c55e;
+            border: 3px solid #ffffff;
+            box-shadow: 0 0 0 1.5px #86efac;
+            z-index: 2;
+        }
+
+        .btn-timeline-download {
+            background-color: #ffffff;
+            color: #15803d;
+            border: 1.2px solid #bbf7d0;
+            font-weight: 600;
+            font-size: 12.5px;
+            padding: 5px 14px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            text-decoration: none;
+            transition: all 0.22s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        }
+
+        .btn-timeline-download:hover {
+            background-color: #f0fdf4;
+            color: #166534;
+            border-color: #86efac;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(34, 197, 94, 0.18);
+        }
     </style>
 </head>
 
@@ -846,78 +952,39 @@
                                         <i class="fas fa-certificate text-success me-1"></i> Documentos Vigentes Oficiales
                                     </span>
                                 </div>
-                                <span class="badge bg-success text-white rounded-pill px-2 py-1" style="font-size: 11px; background-color: var(--sena-green) !important;">
-                                    4 Activos
+                                <span class="badge bg-success text-white rounded-pill px-2.5 py-1" style="font-size: 11px; background-color: var(--sena-green) !important;">
+                                    {{ isset($documentosVigentes) ? $documentosVigentes->count() : 0 }} Activos
                                 </span>
                             </div>
 
                             <!-- Scrollable Container of Active Documents -->
                             <div class="hero-docs-scroll">
-                                
-                                <!-- Document 1: Guía de Aprendizaje -->
-                                <div class="hero-floating-card anim-hero-card-1" onclick="document.getElementById('listado-maestro').scrollIntoView({behavior: 'smooth'})" title="Ver en Listado Maestro">
-                                    <div class="d-flex align-items-center justify-content-between mb-2">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <i class="far fa-file-lines text-success fs-5"></i>
-                                            <span class="fw-bold text-dark font-heading" style="font-size: 0.95rem;">Guía de Aprendizaje - Agro</span>
+                                @forelse($documentosVigentes as $idx => $d)
+                                    @php
+                                        $vNum = $d->versionActual->numero_version ?? '1.0';
+                                        $pNom = $d->proceso->nombre ?? 'General';
+                                        $liderNom = $d->responsable->nombre_completo ?? ($d->area->nombre ?? 'Calidad');
+                                    @endphp
+                                    <div class="hero-floating-card anim-hero-card-{{ ($idx % 4) + 1 }}" onclick="openDocFullModal({{ $d->id }})" title="Ver detalle de {{ $d->nombre }}">
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <div class="d-flex align-items-center gap-2 text-truncate me-2">
+                                                <i class="far fa-file-lines text-success fs-5 flex-shrink-0"></i>
+                                                <span class="fw-bold text-dark font-heading text-truncate" style="font-size: 0.95rem;">{{ $d->nombre }}</span>
+                                            </div>
+                                            <span class="status-chip status-chip-vigente flex-shrink-0">VIGENTE</span>
                                         </div>
-                                        <span class="status-chip status-chip-vigente">VIGENTE</span>
-                                    </div>
-                                    <div class="border-top pt-2 d-flex align-items-center justify-content-between text-muted" style="font-size: 11px;">
-                                        <span>Código: MC-GA-032</span>
-                                        <span>Versión: 4.0</span>
-                                        <span>Líder: Calidad</span>
-                                    </div>
-                                </div>
-
-                                <!-- Document 2: Manual de Calidad y BPM -->
-                                <div class="hero-floating-card anim-hero-card-2" onclick="document.getElementById('listado-maestro').scrollIntoView({behavior: 'smooth'})" title="Ver en Listado Maestro">
-                                    <div class="d-flex align-items-center justify-content-between mb-2">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <i class="far fa-file-lines text-success fs-5"></i>
-                                            <span class="fw-bold text-dark font-heading" style="font-size: 0.95rem;">Manual de Calidad y BPM</span>
+                                        <div class="border-top pt-2 d-flex align-items-center justify-content-between text-muted" style="font-size: 11px;">
+                                            <span>Código: <strong>{{ $d->codigo }}</strong></span>
+                                            <span>Versión: <strong>v{{ $vNum }}</strong></span>
+                                            <span class="text-truncate" style="max-width: 120px;">Líder: {{ $liderNom }}</span>
                                         </div>
-                                        <span class="status-chip status-chip-vigente">VIGENTE</span>
                                     </div>
-                                    <div class="border-top pt-2 d-flex align-items-center justify-content-between text-muted" style="font-size: 11px;">
-                                        <span>Código: SGC-MN-01</span>
-                                        <span>Versión: 2.1</span>
-                                        <span>Líder: Agroindustria</span>
+                                @empty
+                                    <div class="p-4 text-center text-muted bg-white rounded-4 border">
+                                        <i class="fas fa-folder-open fs-3 text-secondary mb-2 d-block"></i>
+                                        <span>No hay documentos vigentes publicados aún.</span>
                                     </div>
-                                </div>
-
-                                <!-- Document 3: Procedimiento de Desinfección -->
-                                <div class="hero-floating-card anim-hero-card-3" onclick="document.getElementById('listado-maestro').scrollIntoView({behavior: 'smooth'})" title="Ver en Listado Maestro">
-                                    <div class="d-flex align-items-center justify-content-between mb-2">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <i class="far fa-file-lines text-success fs-5"></i>
-                                            <span class="fw-bold text-dark font-heading" style="font-size: 0.95rem;">Procedimiento de Desinfección Lácteos</span>
-                                        </div>
-                                        <span class="status-chip status-chip-vigente">VIGENTE</span>
-                                    </div>
-                                    <div class="border-top pt-2 d-flex align-items-center justify-content-between text-muted" style="font-size: 11px;">
-                                        <span>Código: SGC-PR-02</span>
-                                        <span>Versión: 2.0</span>
-                                        <span>Líder: Pecuaria</span>
-                                    </div>
-                                </div>
-
-                                <!-- Document 4: Formato de Control en Cosecha -->
-                                <div class="hero-floating-card anim-hero-card-4" onclick="document.getElementById('listado-maestro').scrollIntoView({behavior: 'smooth'})" title="Ver en Listado Maestro">
-                                    <div class="d-flex align-items-center justify-content-between mb-2">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <i class="far fa-file-lines text-success fs-5"></i>
-                                            <span class="fw-bold text-dark font-heading" style="font-size: 0.95rem;">Formato de Control en Cosecha</span>
-                                        </div>
-                                        <span class="status-chip status-chip-vigente">VIGENTE</span>
-                                    </div>
-                                    <div class="border-top pt-2 d-flex align-items-center justify-content-between text-muted" style="font-size: 11px;">
-                                        <span>Código: SGC-FT-04</span>
-                                        <span>Versión: 1.3</span>
-                                        <span>Líder: Agrícola</span>
-                                    </div>
-                                </div>
-
+                                @endforelse
                             </div>
                         </div>
                     </div>
@@ -1045,30 +1112,23 @@
                     
                     <!-- Search & Filter Controls Bar -->
                     <div class="row g-3 mb-4 align-items-center">
-                        <div class="col-lg-5 col-md-12">
+                        <div class="col-lg-6 col-md-12">
                             <div class="filter-search-box">
                                 <i class="fas fa-magnifying-glass"></i>
-                                <input type="text" id="filterSearchInput" class="form-control" placeholder="Buscar documento..." onkeyup="filterDocsTable()">
+                                <input type="text" id="filterSearchInput" class="form-control" placeholder="Buscar por código o nombre de documento..." onkeyup="filterDocsTable()">
                             </div>
                         </div>
-                        <div class="col-lg-3 col-md-5">
+                        <div class="col-lg-4 col-md-7">
                             <select id="filterProcessSelect" class="form-select filter-select" onchange="filterDocsTable()">
-                                <option value="TODOS">Todos los procesos</option>
-                                <option value="Gestión Estratégica">Gestión Estratégica</option>
-                                <option value="Evaluación y Control">Evaluación y Control</option>
-                                <option value="Gestión Documental">Gestión Documental</option>
-                                <option value="Mejora Continua">Mejora Continua</option>
+                                <option value="TODOS">Todos los procesos institucionales</option>
+                                @if(isset($procesos) && $procesos->count() > 0)
+                                    @foreach($procesos as $proc)
+                                        <option value="{{ $proc->nombre }}">{{ $proc->nombre }}</option>
+                                    @endforeach
+                                @endif
                             </select>
                         </div>
-                        <div class="col-lg-2 col-md-4">
-                            <select id="filterStateSelect" class="form-select filter-select" onchange="filterDocsTable()">
-                                <option value="TODOS">Estado</option>
-                                <option value="Vigente">Vigente</option>
-                                <option value="En Revisión">En Revisión</option>
-                                <option value="Borrador">Borrador</option>
-                            </select>
-                        </div>
-                        <div class="col-lg-2 col-md-3">
+                        <div class="col-lg-2 col-md-5">
                             <button class="btn-filter-search w-100" onclick="filterDocsTable()">
                                 <i class="fas fa-magnifying-glass"></i>
                                 <span>Buscar</span>
@@ -1086,101 +1146,52 @@
                                     <th>Proceso</th>
                                     <th>Versión</th>
                                     <th>Estado</th>
-                                    <th>Fecha</th>
+                                    <th>Fecha Emisión</th>
                                     <th class="text-end">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Document 1 -->
-                                <tr class="doc-row-item" data-code="SGC-DOC-001" data-name="Manual de Calidad" data-process="Gestión Estratégica" data-state="Vigente">
-                                    <td><span class="doc-code-highlight">SGC-DOC-001</span></td>
-                                    <td><strong class="text-dark">Manual de Calidad</strong></td>
-                                    <td>Gestión Estratégica</td>
-                                    <td>v3.2</td>
-                                    <td><span class="status-chip status-chip-vigente">VIGENTE</span></td>
-                                    <td>2026-08-15</td>
-                                    <td class="text-end">
-                                        <div class="d-inline-flex gap-2">
-                                            <button class="btn-action-icon" onclick="openDocPreview('SGC-DOC-001', 'Manual de Calidad', 'Gestión Estratégica', 'v3.2', 'Vigente')" title="Ver detalles"><i class="far fa-eye"></i></button>
-                                            <button class="btn-action-icon" onclick="alert('Descargando SGC-DOC-001: Manual de Calidad')" title="Descargar documento"><i class="fas fa-download text-success"></i></button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <!-- Document 2 -->
-                                <tr class="doc-row-item" data-code="SGC-DOC-015" data-name="Procedimiento de Auditorías" data-process="Evaluación y Control" data-state="Vigente">
-                                    <td><span class="doc-code-highlight">SGC-DOC-015</span></td>
-                                    <td><strong class="text-dark">Procedimiento de Auditorías</strong></td>
-                                    <td>Evaluación y Control</td>
-                                    <td>v2.1</td>
-                                    <td><span class="status-chip status-chip-vigente">VIGENTE</span></td>
-                                    <td>2026-07-20</td>
-                                    <td class="text-end">
-                                        <div class="d-inline-flex gap-2">
-                                            <button class="btn-action-icon" onclick="openDocPreview('SGC-DOC-015', 'Procedimiento de Auditorías', 'Evaluación y Control', 'v2.1', 'Vigente')" title="Ver detalles"><i class="far fa-eye"></i></button>
-                                            <button class="btn-action-icon" onclick="alert('Descargando SGC-DOC-015: Procedimiento de Auditorías')" title="Descargar documento"><i class="fas fa-download text-success"></i></button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <!-- Document 3 -->
-                                <tr class="doc-row-item" data-code="SGC-DOC-042" data-name="Formato de Solicitud de Cambio" data-process="Gestión Documental" data-state="En Revisión">
-                                    <td><span class="doc-code-highlight">SGC-DOC-042</span></td>
-                                    <td><strong class="text-dark">Formato de Solicitud de Cambio</strong></td>
-                                    <td>Gestión Documental</td>
-                                    <td>v1.5</td>
-                                    <td><span class="status-chip status-chip-revision">EN REVISIÓN</span></td>
-                                    <td>2026-09-01</td>
-                                    <td class="text-end">
-                                        <div class="d-inline-flex gap-2">
-                                            <button class="btn-action-icon" onclick="openDocPreview('SGC-DOC-042', 'Formato de Solicitud de Cambio', 'Gestión Documental', 'v1.5', 'En Revisión')" title="Ver detalles"><i class="far fa-eye"></i></button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <!-- Document 4 -->
-                                <tr class="doc-row-item" data-code="SGC-DOC-078" data-name="Instructivo de Archivo Físico" data-process="Gestión Documental" data-state="Vigente">
-                                    <td><span class="doc-code-highlight">SGC-DOC-078</span></td>
-                                    <td><strong class="text-dark">Instructivo de Archivo Físico</strong></td>
-                                    <td>Gestión Documental</td>
-                                    <td>v4.0</td>
-                                    <td><span class="status-chip status-chip-vigente">VIGENTE</span></td>
-                                    <td>2026-06-10</td>
-                                    <td class="text-end">
-                                        <div class="d-inline-flex gap-2">
-                                            <button class="btn-action-icon" onclick="openDocPreview('SGC-DOC-078', 'Instructivo de Archivo Físico', 'Gestión Documental', 'v4.0', 'Vigente')" title="Ver detalles"><i class="far fa-eye"></i></button>
-                                            <button class="btn-action-icon" onclick="alert('Descargando SGC-DOC-078: Instructivo de Archivo Físico')" title="Descargar documento"><i class="fas fa-download text-success"></i></button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <!-- Document 5 -->
-                                <tr class="doc-row-item" data-code="SGC-DOC-103" data-name="Plan de Mejoramiento Sede" data-process="Mejora Continua" data-state="Borrador">
-                                    <td><span class="doc-code-highlight">SGC-DOC-103</span></td>
-                                    <td><strong class="text-dark">Plan de Mejoramiento Sede</strong></td>
-                                    <td>Mejora Continua</td>
-                                    <td>v1.0</td>
-                                    <td><span class="status-chip status-chip-borrador">BORRADOR</span></td>
-                                    <td>2026-09-10</td>
-                                    <td class="text-end">
-                                        <div class="d-inline-flex gap-2">
-                                            <button class="btn-action-icon" onclick="openDocPreview('SGC-DOC-103', 'Plan de Mejoramiento Sede', 'Mejora Continua', 'v1.0', 'Borrador')" title="Ver detalles"><i class="far fa-eye"></i></button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                @if(isset($documentosVigentes) && $documentosVigentes->count() > 0)
+                                    @foreach($documentosVigentes as $doc)
+                                        @php
+                                            $verNum = $doc->versionActual->numero_version ?? '1.0';
+                                            $procNombre = $doc->proceso->nombre ?? 'General';
+                                            $docFecha = $doc->fecha_publicacion ? $doc->fecha_publicacion->format('Y-m-d') : ($doc->fecha_elaboracion ? $doc->fecha_elaboracion->format('Y-m-d') : date('Y-m-d'));
+                                            $estadoUpper = strtoupper($doc->estado);
+                                        @endphp
+                                        <tr class="doc-row-item" data-code="{{ $doc->codigo }}" data-name="{{ $doc->nombre }}" data-process="{{ $procNombre }}" data-state="Vigente">
+                                            <td><span class="doc-code-highlight">{{ $doc->codigo }}</span></td>
+                                            <td><strong class="text-dark">{{ $doc->nombre }}</strong></td>
+                                            <td>{{ $procNombre }}</td>
+                                            <td><span class="badge bg-light text-dark border font-monospace fw-bold px-2 py-0.5">v{{ $verNum }}</span></td>
+                                            <td><span class="status-chip status-chip-vigente">VIGENTE</span></td>
+                                            <td>{{ $docFecha }}</td>
+                                            <td class="text-end">
+                                                <div class="d-inline-flex gap-2">
+                                                    <button class="btn-action-icon" onclick="openDocFullModal({{ $doc->id }})" title="Ver detalle de versiones y vista previa"><i class="far fa-eye"></i></button>
+                                                    <a href="{{ route('sgc.public.documento.pdf', $doc->id) }}" class="btn-action-icon d-inline-flex align-items-center justify-content-center text-decoration-none" title="Descargar PDF oficial ({{ $doc->codigo }}_{{ $doc->nombre }}_v{{ $verNum }}.pdf)"><i class="fas fa-file-pdf text-success"></i></a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    <tr id="emptyDocsRow">
+                                        <td colspan="7" class="text-center py-5 text-muted">
+                                            <div class="py-3">
+                                                <i class="fas fa-folder-open fs-2 text-secondary opacity-50 mb-2 d-block"></i>
+                                                <span class="fw-semibold">No se encontraron documentos vigentes en el Listado Maestro.</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endif
                             </tbody>
                         </table>
                     </div>
 
                     <!-- Table Pagination and Counter Bar -->
                     <div class="d-flex flex-wrap align-items-center justify-content-between pt-4 mt-2 border-top gap-3">
-                        <span class="text-muted fs-7" id="docCountLabel">Mostrando 1-5 de 58 documentos</span>
-                        <div class="d-flex align-items-center gap-1">
-                            <span class="pagination-sena-pill active">1</span>
-                            <span class="pagination-sena-pill">2</span>
-                            <span class="pagination-sena-pill">3</span>
-                            <span class="text-muted px-1">...</span>
-                            <span class="pagination-sena-pill">12</span>
+                        <span class="text-muted fs-7" id="docCountLabel">Mostrando documentos</span>
+                        <div class="d-flex align-items-center gap-1" id="welcomeDocPagination">
                         </div>
                     </div>
 
@@ -1214,7 +1225,7 @@
                             </div>
                             <h4 class="fw-bold font-heading fs-5 text-dark mb-2">Administrador</h4>
                             <p class="text-muted fs-7 mb-0 leading-relaxed">
-                                Control total de la plataforma, configuración global del sistema y asignación de permisos generales.
+                                Control total dero que ahora e la plataforma, configuración global del sistema y asignación de permisos generales.
                             </p>
                         </div>
                     </div>
@@ -1320,42 +1331,187 @@
         </div>
     </footer>
 
-    <!-- ======= MODAL: PREVISUALIZACIÓN DE DOCUMENTO ======= -->
-    <div class="modal fade" id="modalDocPreview" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
-                <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, var(--sena-green-dark) 0%, var(--sena-green) 100%);">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="far fa-file-lines fs-4"></i>
+    <!-- ======= MODAL: DETALLE DE METADATOS E HISTORIAL DE VERSIONES (VERDE SUAVE) ======= -->
+    <div class="modal fade" id="modalDocPreview" tabindex="-1" aria-labelledby="modalDocPreviewLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <!-- Modal Header -->
+                <div class="modal-header bg-white border-bottom px-4 py-3 d-flex align-items-center justify-content-between" style="border-color: #eef2f6 !important;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 p-2 bg-white border text-secondary shadow-xs d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; border-color: #e2e8f0 !important; background-color: #f8fafc !important;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-file-earmark-text text-dark" viewBox="0 0 16 16">
+                                <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"/>
+                                <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"/>
+                            </svg>
+                        </div>
                         <div>
-                            <h6 class="modal-title fw-bold font-heading mb-0" id="modalPreviewTitle">Detalle de Documento</h6>
-                            <small class="text-white-75" id="modalPreviewCode">SGC-DOC</small>
+                            <h5 class="modal-title fw-bold text-dark mb-0 fs-6 font-heading" id="modalPreviewDocHeaderTitle">Detalle del Documento</h5>
+                            <p class="text-muted small mb-0" id="modalPreviewDocHeaderSubtitle" style="font-size: 12.5px;">Metadatos e historial de versiones</p>
                         </div>
                     </div>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-4 bg-light">
-                    <div class="card border-0 rounded-3 p-3 bg-white mb-3 shadow-sm">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted fs-8">Proceso:</span>
-                            <strong class="text-dark fs-8" id="modalPreviewProcess">Gestión Estratégica</strong>
+
+                <!-- Modal Subheader: Navigation Tabs (2 Tabs Only) -->
+                <div class="bg-white border-bottom px-4 pt-1" style="border-color: #eef2f6 !important;">
+                    <ul class="nav nav-tabs border-0" id="modalDocTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="modal-tab-btn active" id="tab-meta-btn" data-bs-toggle="tab" data-bs-target="#tab-meta-pane" type="button" role="tab">
+                                Metadatos
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="modal-tab-btn" id="tab-versiones-btn" data-bs-toggle="tab" data-bs-target="#tab-versiones-pane" type="button" role="tab">
+                                Historial de Versiones
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body px-4 py-4" style="background-color: #ffffff; min-height: 380px;">
+                    <div class="tab-content" id="modalDocTabsContent">
+                        
+                        <!-- TAB 1: METADATOS (Diseño con tarjetas suaves) -->
+                        <div class="tab-pane fade show active" id="tab-meta-pane" role="tabpanel">
+                            <div class="row g-3">
+                                <!-- Código -->
+                                <div class="col-md-6">
+                                    <div class="modal-info-card">
+                                        <small class="text-muted d-block fw-semibold mb-1" style="font-size: 11px;">Código</small>
+                                        <span class="fw-bold fs-6 font-monospace" style="color: #39A900;" id="modalMetaCodigo">-</span>
+                                    </div>
+                                </div>
+                                <!-- Estado -->
+                                <div class="col-md-6">
+                                    <div class="modal-info-card">
+                                        <small class="text-muted d-block fw-semibold mb-1" style="font-size: 11px;">Estado</small>
+                                        <span class="fw-bold fs-6 text-dark" id="modalMetaEstado">VIGENTE</span>
+                                    </div>
+                                </div>
+                                <!-- Nombre del Documento -->
+                                <div class="col-12">
+                                    <div class="modal-info-card">
+                                        <small class="text-muted d-block fw-semibold mb-1" style="font-size: 11px;">Nombre del Documento</small>
+                                        <span class="fw-bold text-dark fs-6 font-heading" id="modalMetaNombre">-</span>
+                                    </div>
+                                </div>
+                                <!-- Proceso -->
+                                <div class="col-md-6">
+                                    <div class="modal-info-card">
+                                        <small class="text-muted d-block fw-semibold mb-1" style="font-size: 11px;">Proceso</small>
+                                        <span class="fw-bold text-dark" style="font-size: 13.5px;" id="modalMetaProceso">-</span>
+                                    </div>
+                                </div>
+                                <!-- Área -->
+                                <div class="col-md-6">
+                                    <div class="modal-info-card">
+                                        <small class="text-muted d-block fw-semibold mb-1" style="font-size: 11px;">Área</small>
+                                        <span class="fw-bold text-dark" style="font-size: 13.5px;" id="modalMetaArea">-</span>
+                                    </div>
+                                </div>
+                                <!-- Tipo Documental -->
+                                <div class="col-md-6">
+                                    <div class="modal-info-card">
+                                        <small class="text-muted d-block fw-semibold mb-1" style="font-size: 11px;">Tipo Documental</small>
+                                        <span class="fw-bold text-dark" style="font-size: 13.5px;" id="modalMetaTipo">-</span>
+                                    </div>
+                                </div>
+                                <!-- Funcionario Responsable -->
+                                <div class="col-md-6">
+                                    <div class="modal-info-card">
+                                        <small class="text-muted d-block fw-semibold mb-1" style="font-size: 11px;">Funcionario Responsable</small>
+                                        <span class="fw-bold text-dark" style="font-size: 13.5px;" id="modalMetaResponsable">-</span>
+                                    </div>
+                                </div>
+                                <!-- Descripción / Objeto -->
+                                <div class="col-12">
+                                    <div class="modal-info-card">
+                                        <small class="text-muted d-block fw-semibold mb-1" style="font-size: 11px;">Descripción / Objeto</small>
+                                        <p class="mb-0 text-secondary" style="font-size: 13px; line-height: 1.5;" id="modalMetaDescripcion">-</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted fs-8">Versión:</span>
-                            <strong class="text-dark fs-8" id="modalPreviewVersion">v1.0</strong>
+
+                        <!-- TAB 2: HISTORIAL DE VERSIONES (Línea de tiempo institucional) -->
+                        <div class="tab-pane fade" id="tab-versiones-pane" role="tabpanel">
+                            
+                            <!-- CARD SUPERIOR: Mini-resumen de metadatos del documento -->
+                            <div class="card border rounded-4 bg-white p-3.5 mb-3 shadow-xs" style="border-color: #e2e8f0 !important;">
+                                <!-- Fila superior: Código, Título y Badge de Vigencia -->
+                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pb-2.5 mb-2.5 border-bottom" style="border-color: #f1f5f9 !important;">
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <span class="badge px-2.5 py-1.5 fw-bold" style="background-color: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; font-size: 12.5px; border-radius: 6px;" id="modalTimelineBadgeCodigo">
+                                            GU-TI-002
+                                        </span>
+                                        <h6 class="fw-bold text-dark mb-0 font-heading" style="font-size: 16px;" id="modalTimelineDocNombre">
+                                            ADSO
+                                        </h6>
+                                    </div>
+                                    <div>
+                                        <span class="badge px-3 py-1.5 fw-bold" style="background-color: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; font-size: 12.5px; border-radius: 20px;" id="modalTimelineVigenteBadge">
+                                            Vigente (V1.0)
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Fila de 4 columnas institucionales -->
+                                <div class="row g-2 text-start">
+                                    <div class="col-6 col-sm-3">
+                                        <small class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size: 10px; letter-spacing: 0.5px;">PROCESO</small>
+                                        <strong class="text-dark d-block text-truncate" style="font-size: 13.5px;" id="modalTimelineProceso">Tecnología</strong>
+                                    </div>
+                                    <div class="col-6 col-sm-3">
+                                        <small class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size: 10px; letter-spacing: 0.5px;">TIPO DE DOCUMENTO</small>
+                                        <strong class="text-dark d-block text-truncate" style="font-size: 13.5px;" id="modalTimelineTipo">Guía</strong>
+                                    </div>
+                                    <div class="col-6 col-sm-3">
+                                        <small class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size: 10px; letter-spacing: 0.5px;">RESPONSABLE DE REVISIÓN</small>
+                                        <strong class="text-dark d-block text-truncate" style="font-size: 13.5px;" id="modalTimelineResponsable">Juan Felipe</strong>
+                                    </div>
+                                    <div class="col-6 col-sm-3">
+                                        <small class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size: 10px; letter-spacing: 0.5px;">FECHA ENTRADA VIGENCIA</small>
+                                        <strong class="text-dark d-block text-truncate" style="font-size: 13.5px;" id="modalTimelineFecha">16-Sep-2026</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- CARD PRINCIPAL: FILTRO Y LÍNEA DE TIEMPO VERTICAL -->
+                            <div class="card border rounded-4 bg-white p-3.5 shadow-xs" style="border-color: #e2e8f0 !important;">
+                                <!-- Barra de Filtros -->
+                                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pb-3 mb-3 border-bottom" style="border-color: #f1f5f9 !important;">
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <span class="fw-bold text-dark" style="font-size: 13px;">Filtrar historial:</span>
+                                        <select id="modalVersionTypeFilter" class="form-select form-select-sm bg-white border rounded-3 px-2.5 py-1.5 fw-semibold text-dark shadow-xs" style="font-size: 12.5px; width: auto; min-width: 180px;" onchange="filterModalTimeline()">
+                                            <option value="all">Tipo de Cambio: Todos</option>
+                                            <option value="inicial">Creación inicial</option>
+                                            <option value="contenido">Actualización de contenido</option>
+                                            <option value="estado">Cambio de estado</option>
+                                            <option value="correccion">Corrección</option>
+                                        </select>
+                                        <div class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 border rounded-3 bg-white text-muted shadow-xs" style="font-size: 12px;">
+                                            <i class="far fa-calendar-alt text-secondary"></i>
+                                            <span id="modalTimelineDateRange">Historial completo</span>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1" id="modalTimelineCountBadge" style="font-size: 11px;">1 Versión</span>
+                                </div>
+
+                                <!-- Contenedor del Timeline Vertical -->
+                                <div class="timeline-v-container position-relative px-2 py-1" id="modalTimelineEventsList">
+                                    <!-- Inyectado dinámicamente vía JavaScript -->
+                                </div>
+                            </div>
+
                         </div>
-                        <div class="d-flex justify-content-between">
-                            <span class="text-muted fs-8">Estado Actual:</span>
-                            <span id="modalPreviewStateBadge" class="status-chip status-chip-vigente">Vigente</span>
-                        </div>
-                    </div>
-                    <div class="alert alert-success bg-success bg-opacity-10 border-0 rounded-3 p-3 mb-0 fs-8 text-dark">
-                        <i class="fas fa-circle-check text-success me-1"></i> Documento oficial homologado por el Sistema de Gestión de Calidad (ISO 9001:2015).
+
                     </div>
                 </div>
-                <div class="modal-footer bg-white py-2">
-                    <button type="button" class="btn btn-sm btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
-                    <button type="button" class="btn btn-sm btn-success text-white rounded-pill px-4" style="background-color: var(--sena-green);" onclick="alert('Iniciando descarga autorizada...')"><i class="fas fa-download me-1"></i> Descargar</button>
+
+                <!-- Modal Footer -->
+                <div class="modal-footer bg-light border-top px-4 py-3 d-flex justify-content-end align-items-center" style="border-color: #eef2f6 !important;">
+                    <button type="button" class="btn btn-outline-secondary px-4 rounded-3 fw-semibold" style="font-size: 13px;" data-bs-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>
@@ -1364,7 +1520,7 @@
     <!-- Bootstrap JS Bundle -->
     <script src="https://sicefa.com.co/general/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Client Scripts for Table Filters, Modal Preview & Scroll Reveal -->
+    <!-- Client Scripts for Table Filters, Full Modal Preview & Scroll Reveal -->
     <script>
         // =========================================================================
         // MOTOR DE ANIMACIONES INTERACTIVAS AL SCROLL (INTERSECTION OBSERVER)
@@ -1390,32 +1546,59 @@
 
                 revealElements.forEach(el => revealObserver.observe(el));
             } else {
-                // Fallback para navegadores antiguos
                 revealElements.forEach(el => el.classList.add('is-revealed'));
             }
+
+            // Tabs listeners para toggle de clase active
+            document.querySelectorAll('#modalDocTabs button[data-bs-toggle="tab"]').forEach(btn => {
+                btn.addEventListener('shown.bs.tab', function (e) {
+                    document.querySelectorAll('#modalDocTabs .modal-tab-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                });
+            });
+
+            // Inicializar filtro de tabla
+            filterDocsTable();
         });
 
-        function filterDocsTable() {
-            const searchVal = document.getElementById('filterSearchInput').value.toLowerCase().trim();
-            const processVal = document.getElementById('filterProcessSelect').value;
-            const stateVal = document.getElementById('filterStateSelect').value;
+        let currentWelcomePage = 1;
+        const welcomePageSize = 8;
+
+        function filterDocsTable(page = 1) {
+            currentWelcomePage = page;
+            const searchInput = document.getElementById('filterSearchInput');
+            const searchVal = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            const processSelect = document.getElementById('filterProcessSelect');
+            const processVal = processSelect ? processSelect.value : 'TODOS';
             
-            const rows = document.querySelectorAll('#mainDocsTable tbody tr');
-            let visibleCount = 0;
+            const rows = Array.from(document.querySelectorAll('#mainDocsTable tbody tr.doc-row-item'));
+            const matchingRows = [];
 
             rows.forEach(row => {
                 const code = (row.getAttribute('data-code') || '').toLowerCase();
                 const name = (row.getAttribute('data-name') || '').toLowerCase();
                 const process = row.getAttribute('data-process') || '';
-                const state = row.getAttribute('data-state') || '';
 
                 const matchesSearch = !searchVal || code.includes(searchVal) || name.includes(searchVal);
                 const matchesProcess = processVal === 'TODOS' || process === processVal;
-                const matchesState = stateVal === 'TODOS' || state.toLowerCase() === stateVal.toLowerCase();
 
-                if (matchesSearch && matchesProcess && matchesState) {
+                if (matchesSearch && matchesProcess) {
+                    matchingRows.push(row);
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            const totalMatches = matchingRows.length;
+            const totalPages = Math.ceil(totalMatches / welcomePageSize) || 1;
+            if (currentWelcomePage > totalPages) currentWelcomePage = totalPages;
+
+            const startIdx = (currentWelcomePage - 1) * welcomePageSize;
+            const endIdx = startIdx + welcomePageSize;
+
+            matchingRows.forEach((row, idx) => {
+                if (idx >= startIdx && idx < endIdx) {
                     row.style.display = '';
-                    visibleCount++;
                 } else {
                     row.style.display = 'none';
                 }
@@ -1423,22 +1606,215 @@
 
             const countLabel = document.getElementById('docCountLabel');
             if (countLabel) {
-                countLabel.textContent = `Mostrando ${visibleCount} de 58 documentos`;
+                const showingStart = totalMatches === 0 ? 0 : startIdx + 1;
+                const showingEnd = Math.min(endIdx, totalMatches);
+                countLabel.textContent = `Mostrando ${showingStart}-${showingEnd} de ${totalMatches} documentos`;
+            }
+
+            renderWelcomePagination(totalPages, currentWelcomePage);
+        }
+
+        function renderWelcomePagination(totalPages, currentPage) {
+            const container = document.getElementById('welcomeDocPagination');
+            if (!container) return;
+
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+
+            // Prev Button
+            if (currentPage > 1) {
+                html += `<button class="pagination-sena-pill" onclick="filterDocsTable(${currentPage - 1})" title="Anterior"><i class="fas fa-chevron-left" style="font-size: 11px;"></i></button>`;
+            }
+
+            // Page Buttons
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                    const activeClass = i === currentPage ? 'active' : '';
+                    html += `<button class="pagination-sena-pill ${activeClass}" onclick="filterDocsTable(${i})">${i}</button>`;
+                } else if (i === currentPage - 2 || i === currentPage + 2) {
+                    html += `<span class="text-muted px-1">...</span>`;
+                }
+            }
+
+            // Next Button
+            if (currentPage < totalPages) {
+                html += `<button class="pagination-sena-pill" onclick="filterDocsTable(${currentPage + 1})" title="Siguiente"><i class="fas fa-chevron-right" style="font-size: 11px;"></i></button>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // =========================================================================
+        // APERTURA Y CARGA COMPLETA DEL MODAL DE DETALLE Y LÍNEA DE TIEMPO
+        // =========================================================================
+        let currentDocVersions = [];
+
+        async function openDocFullModal(docId) {
+            // Reset tab al primer tab (Metadatos)
+            const firstTabBtn = document.getElementById('tab-meta-btn');
+            if (firstTabBtn) {
+                const tab = new bootstrap.Tab(firstTabBtn);
+                tab.show();
+                document.querySelectorAll('#modalDocTabs .modal-tab-btn').forEach(b => b.classList.remove('active'));
+                firstTabBtn.classList.add('active');
+            }
+
+            // Reset selector de filtro
+            const filterSelect = document.getElementById('modalVersionTypeFilter');
+            if (filterSelect) filterSelect.value = 'all';
+
+            // Mostrar spinner en la lista de timeline
+            const timelineContainer = document.getElementById('modalTimelineEventsList');
+            timelineContainer.innerHTML = `
+                <div class="text-center py-5 text-muted">
+                    <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
+                    <span>Cargando información y versiones...</span>
+                </div>
+            `;
+
+            const modalEl = document.getElementById('modalDocPreview');
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+
+            try {
+                const response = await fetch(`{{ url('/sgc/public/documentos') }}/${docId}/detalle`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!response.ok) throw new Error('Error al consultar datos');
+
+                const data = await response.json();
+                if (!data.success) throw new Error('Documento no encontrado');
+
+                const doc = data.documento;
+                currentDocVersions = doc.versiones || [];
+
+                // 1. Encabezado principal del modal
+                document.getElementById('modalPreviewDocHeaderTitle').textContent = `${doc.codigo} — ${doc.nombre}`;
+                document.getElementById('modalPreviewDocHeaderSubtitle').textContent = 'Metadatos e historial de versiones';
+
+                // 2. Tab 1: Metadatos
+                document.getElementById('modalMetaCodigo').textContent = doc.codigo;
+                document.getElementById('modalMetaEstado').textContent = doc.estado;
+                document.getElementById('modalMetaNombre').textContent = doc.nombre;
+                document.getElementById('modalMetaProceso').textContent = doc.proceso;
+                document.getElementById('modalMetaArea').textContent = doc.area;
+                document.getElementById('modalMetaTipo').textContent = doc.tipo_doc;
+                document.getElementById('modalMetaResponsable').textContent = doc.responsable;
+                document.getElementById('modalMetaDescripcion').textContent = doc.descripcion || 'Prueba de Creacion y publicacion';
+
+                // 3. Tab 2: Mini-resumen superior
+                document.getElementById('modalTimelineBadgeCodigo').textContent = doc.codigo;
+                document.getElementById('modalTimelineDocNombre').textContent = doc.nombre;
+                document.getElementById('modalTimelineVigenteBadge').textContent = `Vigente (${doc.version_actual})`;
+                document.getElementById('modalTimelineProceso').textContent = doc.proceso;
+                document.getElementById('modalTimelineTipo').textContent = doc.tipo_doc;
+                document.getElementById('modalTimelineResponsable').textContent = doc.responsable;
+                document.getElementById('modalTimelineFecha').textContent = doc.fecha_vigencia;
+
+                // 4. Contador de versiones
+                const countBadge = document.getElementById('modalTimelineCountBadge');
+                if (countBadge) {
+                    countBadge.textContent = `${currentDocVersions.length} ${currentDocVersions.length === 1 ? 'Versión' : 'Versiones'}`;
+                }
+
+                // 5. Renderizar lista de versiones en el Timeline
+                renderTimelineList(currentDocVersions, 'all');
+
+            } catch (err) {
+                console.error(err);
+                timelineContainer.innerHTML = `
+                    <div class="text-center py-4 text-danger">
+                        <i class="fas fa-exclamation-triangle fs-3 mb-2 d-block"></i>
+                        <span>No se pudo cargar la información del documento.</span>
+                    </div>
+                `;
             }
         }
 
-        function openDocPreview(code, name, process, version, state) {
-            document.getElementById('modalPreviewTitle').textContent = name;
-            document.getElementById('modalPreviewCode').textContent = code;
-            document.getElementById('modalPreviewProcess').textContent = process;
-            document.getElementById('modalPreviewVersion').textContent = version;
-            
-            const badge = document.getElementById('modalPreviewStateBadge');
-            badge.textContent = state;
-            badge.className = 'status-chip ' + (state === 'Vigente' ? 'status-chip-vigente' : (state === 'En Revisión' ? 'status-chip-revision' : 'status-chip-borrador'));
+        // =========================================================================
+        // RENDERIZADO DINÁMICO DE LA LÍNEA DE TIEMPO VERTICAL (ESTILO IMAGEN 1)
+        // =========================================================================
+        function renderTimelineList(versions, filterType = 'all') {
+            const container = document.getElementById('modalTimelineEventsList');
+            if (!container) return;
 
-            const modal = new bootstrap.Modal(document.getElementById('modalDocPreview'));
-            modal.show();
+            const filtered = versions.filter(v => {
+                if (filterType === 'all') return true;
+                const tb = (v.tipo_badge || '').toLowerCase();
+                if (filterType === 'inicial') return tb.includes('inicial') || tb.includes('creación') || tb.includes('creacion') || v.numero_version == '1.0' || v.numero_version == '1';
+                if (filterType === 'contenido') return tb.includes('contenido') || tb.includes('actualización') || tb.includes('actualizacion');
+                if (filterType === 'estado') return tb.includes('estado') || tb.includes('vigente') || tb.includes('obsoleto');
+                if (filterType === 'correccion') return tb.includes('corrección') || tb.includes('correccion');
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-filter-circle-xmark fs-3 text-secondary opacity-50 mb-2 d-block"></i>
+                        <span class="small">No se encontraron versiones para el filtro seleccionado.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach((v, idx) => {
+                const isLast = idx === filtered.length - 1;
+                const formato = v.archivo_formato || 'PDF';
+                
+                html += `
+                    <div class="timeline-v-item ${isLast ? 'timeline-v-item-last' : ''}">
+                        <!-- Punto Conector de la Línea -->
+                        <div class="timeline-v-dot"></div>
+
+                        <!-- Encabezado del Evento: Versión + Badge + Fecha -->
+                        <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <strong class="text-dark fw-bold font-heading" style="font-size: 15px;">
+                                    Versión ${v.numero_version}
+                                </strong>
+                                <span class="badge px-2.5 py-0.5 fw-semibold" style="background-color: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; font-size: 11.5px; border-radius: 6px;">
+                                    ${v.tipo_badge || 'Creación inicial'}
+                                </span>
+                            </div>
+                            <span class="text-muted" style="font-size: 12.5px;">
+                                ${v.fecha_publicacion_formatted || v.fecha_publicacion}
+                            </span>
+                        </div>
+
+                        <!-- Línea de Autoría: Por: Nombre (Rol) -->
+                        <div class="text-secondary fw-semibold mb-1" style="font-size: 13px; color: #475569 !important;">
+                            ${v.autor_label || 'Por: ' + v.creador + ' (Resp. Calidad)'}
+                        </div>
+
+                        <!-- Cuerpo de la Descripción / Modificaciones -->
+                        <p class="mb-2 text-muted" style="font-size: 13.5px; line-height: 1.5; color: #64748b !important;">
+                            ${v.descripcion_cambio || 'Prueba de Creacion y publicacion'}
+                        </p>
+
+                        <!-- Botón de Descarga adjunto estilo Verde Suave del Sistema -->
+                        <div>
+                            <a href="${v.download_url}" download="${v.archivo_nombre}" class="btn-timeline-download" title="Descargar adjunto oficial ${v.archivo_nombre}">
+                                <i class="fas fa-file-arrow-down text-success"></i>
+                                <span>Descargar adjunto (${formato})</span>
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function filterModalTimeline() {
+            const filterVal = document.getElementById('modalVersionTypeFilter').value;
+            renderTimelineList(currentDocVersions, filterVal);
         }
     </script>
 </body>

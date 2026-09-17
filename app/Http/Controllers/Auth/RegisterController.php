@@ -26,8 +26,8 @@ class RegisterController extends Controller
     }
 
     /**
-     * Procesa la solicitud de registro de un nuevo usuario en el ERP.
-     * Todo nuevo usuario registrado públicamente queda con el rol "Consultante".
+     * Maneja el registro de nuevos usuarios en el sistema ERP.
+     * Todo nuevo usuario registrado públicamente queda con el rol institucional por defecto.
      */
     public function register(Request $request)
     {
@@ -53,20 +53,9 @@ class RegisterController extends Controller
             'password.confirmed' => 'La confirmación de la contraseña no coincide.',
         ]);
 
-        // Asegurar que el rol 'Consultante' exista en la base de datos
-        $consultanteRol = Rol::where('slug', 'consultante')->first();
-        if (!$consultanteRol) {
-            $consultanteRol = Rol::firstOrCreate(
-                ['slug' => 'consultante'],
-                [
-                    'nombre' => 'Aprendiz/Instructor Consultante',
-                    'descripcion' => 'Consulta documentos vigentes vía enlace directo',
-                    'creado_en' => now(),
-                ]
-            );
-        }
-
-        $rolId = $consultanteRol ? $consultanteRol->id : 4;
+        // Asignar el rol institucional por defecto ('lider_area')
+        $defaultRol = Rol::where('slug', 'lider_area')->first() ?? Rol::where('id', 3)->first();
+        $rolId = $defaultRol ? $defaultRol->id : 3;
 
         // Crear el nuevo usuario
         $user = User::create([

@@ -52,56 +52,68 @@
                     </li>
 
                     <!-- 2. Solicitudes -->
-                    @php
-                        $isHistorialActive = request()->routeIs('sgc.lider_area.solicitudes.*') || request()->routeIs('sgc.solicitudes.*');
-                    @endphp
-                    <li class="nav-item">
-                        <a href="{{ route('sgc.lider_area.solicitudes.index') }}" 
-                           class="nav-link d-flex align-items-center gap-3 {{ $isHistorialActive ? 'active' : '' }}" 
-                           title="Solicitudes">
-                            <i class="nav-icon fas fa-clock-rotate-left"></i>
-                            <p class="mb-0 text-truncate">Solicitudes</p>
-                        </a>
-                    </li>
+                    @if(auth()->check() && (auth()->user()->hasSuperAdmin() || auth()->user()->tieneAccesoModulo('SGC', 'consultar_solicitud|crear_solicitud|aprobar_solicitud|rechazar_solicitud')))
+                        @php
+                            $isHistorialActive = request()->routeIs('sgc.lider_area.solicitudes.*') || request()->routeIs('sgc.solicitudes.*');
+                            $liderPendingCount = auth()->check() ? \Modules\SGC\Models\Solicitud::where('solicitado_por', auth()->id())->whereIn('estado', ['radicada', 'en_revision'])->count() : 0;
+                        @endphp
+                        <li class="nav-item">
+                            <a href="{{ route('sgc.lider_area.solicitudes.index') }}" 
+                               class="nav-link d-flex align-items-center justify-content-between gap-2 {{ $isHistorialActive ? 'active' : '' }}" 
+                               title="Solicitudes">
+                                <div class="d-flex align-items-center gap-3 overflow-hidden">
+                                    <i class="nav-icon fas fa-file-circle-check"></i>
+                                    <p class="mb-0 text-truncate">Solicitudes</p>
+                                </div>
+                                @if($liderPendingCount > 0)
+                                    <span class="badge rounded-pill bg-warning text-dark px-2 py-0.5" style="font-size: 10px;">{{ $liderPendingCount }}</span>
+                                @endif
+                            </a>
+                        </li>
+                    @endif
 
                     <!-- 3. Documentos de mi Área -->
-                    @php
-                        $isDocsActive = request()->routeIs('sgc.documentos.*') && !request()->has('tipo_doc_id');
-                    @endphp
-                    <li class="nav-item">
-                        <a href="{{ route('sgc.documentos.index') }}" 
-                           class="nav-link d-flex align-items-center gap-3 {{ $isDocsActive ? 'active' : '' }}" 
-                           title="Documentos de mi Área">
-                            <i class="nav-icon fas fa-folder-open"></i>
-                            <p class="mb-0 text-truncate">Documentos de mi Área</p>
-                        </a>
-                    </li>
+                    @if(auth()->check() && (auth()->user()->hasSuperAdmin() || auth()->user()->tieneAccesoModulo('SGC', 'consultar_documento')))
+                        @php
+                            $isDocsActive = request()->routeIs('sgc.documentos.*') && !request()->has('tipo_doc_id');
+                        @endphp
+                        <li class="nav-item">
+                            <a href="{{ route('sgc.documentos.index') }}" 
+                               class="nav-link d-flex align-items-center gap-3 {{ $isDocsActive ? 'active' : '' }}" 
+                               title="Documentos de mi Área">
+                                <i class="nav-icon fas fa-folder-open"></i>
+                                <p class="mb-0 text-truncate">Documentos de mi Área</p>
+                            </a>
+                        </li>
 
-                    <!-- 4. Formatos y Registros -->
-                    @php
-                        $isFormatosActive = request()->routeIs('sgc.documentos.*') && request()->has('tipo_doc_id');
-                    @endphp
-                    <li class="nav-item">
-                        <a href="{{ route('sgc.documentos.index') }}?tipo_doc_id=fo" 
-                           class="nav-link d-flex align-items-center gap-3 {{ $isFormatosActive ? 'active' : '' }}" 
-                           title="Formatos y Registros">
-                            <i class="nav-icon fas fa-table-list"></i>
-                            <p class="mb-0 text-truncate">Formatos y Registros</p>
-                        </a>
-                    </li>
+                        <!-- 4. Formatos y Registros -->
+                        @php
+                            $isFormatosActive = request()->routeIs('sgc.documentos.*') && request()->has('tipo_doc_id');
+                        @endphp
+                        <li class="nav-item">
+                            <a href="{{ route('sgc.documentos.index') }}?tipo_doc_id=fo" 
+                               class="nav-link d-flex align-items-center gap-3 {{ $isFormatosActive ? 'active' : '' }}" 
+                               title="Formatos y Registros">
+                                <i class="nav-icon fas fa-table-list"></i>
+                                <p class="mb-0 text-truncate">Formatos y Registros</p>
+                            </a>
+                        </li>
+                    @endif
 
                     <!-- 5. Estructura y Procesos -->
-                    @php
-                        $isCatalogosActive = request()->routeIs('sgc.catalogos.*');
-                    @endphp
-                    <li class="nav-item">
-                        <a href="{{ route('sgc.catalogos.index') }}" 
-                           class="nav-link d-flex align-items-center gap-3 {{ $isCatalogosActive ? 'active' : '' }}" 
-                           title="Estructura y Procesos">
-                            <i class="nav-icon fas fa-folder-tree"></i>
-                            <p class="mb-0 text-truncate">Estructura y Procesos</p>
-                        </a>
-                    </li>
+                    @if(auth()->check() && (auth()->user()->hasSuperAdmin() || auth()->user()->tieneAccesoModulo('SGC', 'gestionar_catalogos')))
+                        @php
+                            $isCatalogosActive = request()->routeIs('sgc.catalogos.*');
+                        @endphp
+                        <li class="nav-item">
+                            <a href="{{ route('sgc.catalogos.index') }}" 
+                               class="nav-link d-flex align-items-center gap-3 {{ $isCatalogosActive ? 'active' : '' }}" 
+                               title="Estructura y Procesos">
+                                <i class="nav-icon fas fa-folder-tree"></i>
+                                <p class="mb-0 text-truncate">Estructura y Procesos</p>
+                            </a>
+                        </li>
+                    @endif
 
                 </ul>
             </nav>

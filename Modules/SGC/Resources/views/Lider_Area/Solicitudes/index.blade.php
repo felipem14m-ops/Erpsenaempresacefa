@@ -474,16 +474,15 @@
             </table>
         </div>
 
-        @if($solicitudes->hasPages())
-            <div class="card-footer bg-white border-0 px-4 py-3 d-flex justify-content-between align-items-center">
-                <small class="text-muted">
-                    Mostrando {{ $solicitudes->firstItem() ?? 0 }} - {{ $solicitudes->lastItem() ?? 0 }} de {{ $solicitudes->total() }} registros
-                </small>
-                <div>
-                    {{ $solicitudes->links('pagination::bootstrap-5') }}
-                </div>
+        <!-- Card Footer with Pagination -->
+        <div class="card-footer bg-white border-top px-4 py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="text-muted small">
+                Mostrando {{ $solicitudes->firstItem() ?? 0 }} - {{ $solicitudes->lastItem() ?? 0 }} de {{ $solicitudes->total() }} registros
             </div>
-        @endif
+            <div>
+                {{ $solicitudes->links('sgc::layouts.partials.pagination') }}
+            </div>
+        </div>
     </div>
 
 </div>
@@ -585,8 +584,22 @@
                                         </div>
                                     </div>
 
-                                    <!-- 3. Documento relacionado (Disabled for Creación, Enabled for Modificación/Eliminación) -->
-                                    <div class="mb-3" id="wrapper_doc_relacionado">
+                                    <!-- 3. Nombre del Documento Propuesto (Para creación) -->
+                                    <div class="mb-3" id="wrapper_nombre_propuesto">
+                                        <label class="form-label small fw-semibold text-secondary mb-1" style="font-size: 13px;">
+                                            Nombre del Documento Propuesto <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" 
+                                               name="nombre_propuesto" 
+                                               id="modal_nombre_propuesto" 
+                                               class="form-control rounded-3 py-2 px-3 bg-white border" 
+                                               style="font-size: 13.5px; border-color: #e2e8f0;" 
+                                               placeholder="Ej: Manual de Buenas Prácticas de Manufactura en Planta Lácteos" 
+                                               value="{{ old('nombre_propuesto') }}">
+                                    </div>
+
+                                    <!-- 4. Documento relacionado (Disabled for Creación, Enabled for Modificación/Eliminación) -->
+                                    <div class="mb-3 d-none" id="wrapper_doc_relacionado">
                                         <label class="form-label small fw-semibold text-secondary mb-1" style="font-size: 13px;">
                                             Documento relacionado <span class="text-muted fw-normal" style="font-size: 11.5px;">(Solo requerido para Modificación o Eliminación)</span>
                                         </label>
@@ -609,6 +622,7 @@
                                                 @foreach($documentos as $doc)
                                                     <option value="{{ $doc->codigo }} — {{ $doc->nombre }}" 
                                                             data-id="{{ $doc->id }}"
+                                                            data-nombre="{{ $doc->nombre }}"
                                                             data-proceso-id="{{ $doc->proceso_id }}"
                                                             data-area-id="{{ $doc->area_id }}"
                                                             data-tipo-doc-id="{{ $doc->tipo_doc_id }}"></option>
@@ -713,20 +727,30 @@
         const inputBuscarDoc = document.getElementById('input_buscar_doc_modal');
         const hiddenDocId = document.getElementById('modal_hidden_doc_id');
         const docBadge = document.getElementById('modal_doc_info_badge');
+        const wrapperNombre = document.getElementById('wrapper_nombre_propuesto');
+        const wrapperDocRel = document.getElementById('wrapper_doc_relacionado');
+        const inputNombre = document.getElementById('modal_nombre_propuesto');
 
         if (tipo === 'creacion') {
+            if (wrapperNombre) wrapperNombre.classList.remove('d-none');
+            if (wrapperDocRel) wrapperDocRel.classList.add('d-none');
+            if (inputNombre) inputNombre.required = true;
+
             if (inputBuscarDoc) {
                 inputBuscarDoc.disabled = true;
+                inputBuscarDoc.required = false;
                 inputBuscarDoc.value = '';
-                inputBuscarDoc.placeholder = 'Buscar documento vigente para asociar...';
-                inputBuscarDoc.classList.add('bg-light');
-                inputBuscarDoc.classList.remove('bg-white');
             }
             if (hiddenDocId) hiddenDocId.value = '';
             if (docBadge) docBadge.classList.add('d-none');
         } else {
+            if (wrapperNombre) wrapperNombre.classList.add('d-none');
+            if (wrapperDocRel) wrapperDocRel.classList.remove('d-none');
+            if (inputNombre) inputNombre.required = false;
+
             if (inputBuscarDoc) {
                 inputBuscarDoc.disabled = false;
+                inputBuscarDoc.required = true;
                 inputBuscarDoc.placeholder = 'Escriba o seleccione el documento que desea ' + tipo + '...';
                 inputBuscarDoc.classList.remove('bg-light');
                 inputBuscarDoc.classList.add('bg-white');
@@ -763,6 +787,7 @@
         const listDocs = document.getElementById('modalListDocumentos');
         const docBadge = document.getElementById('modal_doc_info_badge');
         const docText = document.getElementById('modal_doc_info_text');
+        const inputNombre = document.getElementById('modal_nombre_propuesto');
 
         if (inputBuscarDoc && listDocs) {
             inputBuscarDoc.addEventListener('input', function () {
@@ -773,11 +798,13 @@
                     const procId = matchedOption.getAttribute('data-proceso-id');
                     const areaId = matchedOption.getAttribute('data-area-id');
                     const tipoDocId = matchedOption.getAttribute('data-tipo-doc-id');
+                    const docNombre = matchedOption.getAttribute('data-nombre');
 
                     if (hiddenDocId) hiddenDocId.value = docId;
                     if (procId) document.getElementById('modal_proceso_id').value = procId;
                     if (areaId) document.getElementById('modal_area_id').value = areaId;
                     if (tipoDocId) document.getElementById('modal_tipo_doc_id').value = tipoDocId;
+                    if (inputNombre && docNombre) inputNombre.value = docNombre;
 
                     if (docBadge && docText) {
                         docText.textContent = val;
